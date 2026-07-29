@@ -1,0 +1,36 @@
+﻿@model LibraryManagement.ViewModels.CreateLoanTicketViewModel
+
+<h2>Tạo Phiếu Mượn Mới</h2>
+
+<div class="row">
+    <div class="col-md-6">
+        <form asp-action="Create">
+            <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
+
+            <div class="form-group mb-3">
+                <label asp-for="BorrowerName" class="control-label"></label>
+                <input asp-for="BorrowerName" class="form-control" />
+                <span asp-validation-for="BorrowerName" class="text-danger"></span>
+            </div>
+
+            <div class="form-group mb-3">
+                <label asp-for="BookId" class="control-label"></label>
+                <select asp-for="BookId" class="form-select" asp-items="ViewBag.Books">
+                    <option value="">-- Chọn sách --</option>
+                </select>
+                <span asp-validation-for="BookId" class="text-danger"></span>
+            </div>
+
+            <div class="form-group mb-3">
+                <label asp-for="Quantity" class="control-label"></label>
+                <input asp-for="Quantity" class="form-control" type="number" min="1" value="1" />
+                <span asp-validation-for="Quantity" class="text-danger"></span>
+            </div>
+
+            <div class="form-group">
+                <button type="submit" class="btn btn-success">Lưu Phiếu Mượn</button>
+                <a asp-action="Index" class="btn btn-secondary">Quay lại</a>
+            </div>
+        </form>
+    </div>
+</div>
