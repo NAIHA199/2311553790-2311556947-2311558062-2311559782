@@ -9,6 +9,6 @@
 - Hiển thị danh sách Phiếu mượn (kèm tổng số lượng sách) 
 - Chức năng Tìm kiếm theo tên & Lọc theo Trạng thái.
 # 2311556947_Trương Hòa Phát: Phát triển Giao diện & Tìm kiếm
--Tạo mới Phiếu mượn sử dụng EF Core Transaction, trừ kho AvailableQuantity, kiểm tra điều kiện validation và Rollback nếu thiếu hàng.
+- Tạo mới Phiếu mượn sử dụng EF Core Transaction, trừ kho AvailableQuantity, kiểm tra điều kiện validation và Rollback nếu thiếu hàng.
 # 2311559782_Nguyễn Thị Lụa: Thống kê Doanh thu & Truy vấn LINQ
--Thống kê dữ liệu nâng cao bằng LINQ (Tổng sách đang mượn + Top 3 sách mượn nhiều nhất) và tạo trang Dashboard.
+- Thống kê dữ liệu nâng cao bằng LINQ (Tổng sách đang mượn + Top 3 sách mượn nhiều nhất) và tạo trang Dashboard.
