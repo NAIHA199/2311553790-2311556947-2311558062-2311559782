@@ -1,0 +1,52 @@
+@model IEnumerable<LibraryAdvanced.ViewModels.LoanTicketListViewModel>
+
+<h2>Danh Sách Phiếu Mượn</h2>
+
+<p>
+    <a asp-action="Create" class="btn btn-primary">Tạo Phiếu Mượn Mới</a>
+</p>
+
+<!-- Form Tìm kiếm & Lọc -->
+<form method="get" asp-action="Index" class="row g-3 mb-4">
+    <div class="col-md-4">
+        <input type="text" name="searchString" value="@ViewBag.SearchString" class="form-control" placeholder="Tìm theo tên người mượn..." />
+    </div>
+    <div class="col-md-3">
+        <select name="statusFilter" class="form-select">
+            <option value="All" selected="@(ViewBag.StatusFilter == "All" ? "selected" : null)">-- Tất cả trạng thái --</option>
+            <option value="Borrowed" selected="@(ViewBag.StatusFilter == "Borrowed" ? "selected" : null)">Borrowed (Đang mượn)</option>
+            <option value="Returned" selected="@(ViewBag.StatusFilter == "Returned" ? "selected" : null)">Returned (Đã trả)</option>
+        </select>
+    </div>
+    <div class="col-md-2">
+        <button type="submit" class="btn btn-secondary">Tìm kiếm</button>
+    </div>
+</form>
+
+<table class="table table-bordered table-striped">
+    <thead>
+        <tr>
+            <th>Mã Phiếu</th>
+            <th>Tên Người Mượn</th>
+            <th>Ngày Mượn</th>
+            <th>Trạng Thái</th>
+            <th>Tổng Số Lượng Sách</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var item in Model)
+        {
+            <tr>
+                <td>@item.Id</td>
+                <td>@item.BorrowerName</td>
+                <td>@item.BorrowDate?.ToString("dd/MM/yyyy HH:mm")</td>
+                <td>
+                    <span class="badge @(item.Status == "Borrowed" ? "bg-warning text-dark" : "bg-success")">
+                        @item.Status
+                    </span>
+                </td>
+                <td>@item.TotalQuantity</td>
+            </tr>
+        }
+    </tbody>
+</table>
