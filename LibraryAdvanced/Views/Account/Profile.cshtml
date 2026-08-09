@@ -1,0 +1,179 @@
+﻿@{
+    ViewData["Title"] = "Hồ sơ";
+
+    var username =
+        ViewBag.Username as string
+        ?? "";
+
+    var displayName =
+        ViewBag.DisplayName as string
+        ?? "Người dùng";
+
+    var role =
+        ViewBag.Role as string
+        ?? "Reader";
+
+
+    var roleDisplay =
+        role == "Admin"
+            ? "Quản trị viên"
+            : "Độc giả";
+
+
+    var avatar =
+        !string.IsNullOrWhiteSpace(displayName)
+            ? displayName.Substring(0, 1).ToUpper()
+            : "U";
+}
+
+
+<div class="profile-page">
+
+    <!-- HEADER -->
+
+    <div class="profile-header">
+
+        <span class="page-label">
+            TÀI KHOẢN
+        </span>
+
+        <h1>
+            Hồ sơ
+        </h1>
+
+        <p>
+            Thông tin tài khoản của bạn.
+        </p>
+
+    </div>
+
+
+    <!-- PROFILE CARD -->
+
+    <div class="profile-card">
+
+        <!-- AVATAR -->
+
+        <div class="profile-avatar">
+            @avatar
+        </div>
+
+
+        <!-- INFO -->
+
+        <div class="profile-info">
+
+            <h2>
+                @displayName
+            </h2>
+
+            <span class="profile-role">
+
+                @if (role == "Admin")
+                {
+                    <span>
+                        👑 @roleDisplay
+                    </span>
+                }
+                else
+                {
+                    <span>
+                        👤 @roleDisplay
+                    </span>
+                }
+
+            </span>
+
+        </div>
+
+    </div>
+
+
+    <!-- INFORMATION -->
+
+    <div class="profile-information">
+
+        <div class="profile-section-title">
+
+            <h2>
+                Thông tin tài khoản
+            </h2>
+
+        </div>
+
+
+        <!-- DISPLAY NAME -->
+
+        <div class="profile-row">
+
+            <div class="profile-label">
+                Họ và tên
+            </div>
+
+            <div class="profile-value">
+                @displayName
+            </div>
+
+        </div>
+
+
+        <!-- USERNAME -->
+
+        <div class="profile-row">
+
+            <div class="profile-label">
+                Tên đăng nhập
+            </div>
+
+            <div class="profile-value">
+                @username
+            </div>
+
+        </div>
+
+
+        <!-- ROLE -->
+
+        <div class="profile-row">
+
+            <div class="profile-label">
+                Vai trò
+            </div>
+
+            <div class="profile-value">
+
+                @if (role == "Admin")
+                {
+                    <span class="profile-badge admin">
+                        👑 Quản trị viên
+                    </span>
+                }
+                else
+                {
+                    <span class="profile-badge reader">
+                        👤 Độc giả
+                    </span>
+                }
+
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <!-- ACTION -->
+
+    <div class="profile-actions">
+
+        <a asp-controller="Account"
+           asp-action="Logout"
+           class="profile-logout">
+
+            🚪 Đăng xuất
+
+        </a>
+
+    </div>
+
+</div>

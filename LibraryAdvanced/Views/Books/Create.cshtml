@@ -1,0 +1,173 @@
+﻿@model LibraryAdvanced.Models.Book
+
+@{
+    ViewData["Title"] = "Thêm sách";
+}
+
+<div class="admin-book-page">
+
+    <div class="admin-book-header">
+
+        <span>
+            QUẢN TRỊ
+        </span>
+
+        <h1>
+            Thêm sách
+        </h1>
+
+        <p>
+            Thêm một cuốn sách mới vào thư viện.
+        </p>
+
+    </div>
+
+
+    <div class="admin-book-card">
+
+        <form asp-action="Create"
+              method="post"
+              enctype="multipart/form-data">
+
+            @Html.AntiForgeryToken()
+
+            <div asp-validation-summary="ModelOnly"
+                 class="text-danger mb-3">
+            </div>
+
+
+            <!-- TITLE -->
+
+            <div class="admin-form-group">
+
+                <label asp-for="Title">
+                    Tên sách
+                </label>
+
+                <input asp-for="Title"
+                       class="form-control"
+                       placeholder="Nhập tên sách..." />
+
+                <span asp-validation-for="Title"
+                      class="text-danger">
+                </span>
+
+            </div>
+
+
+            <!-- AUTHOR -->
+
+            <div class="admin-form-group">
+
+                <label asp-for="Author">
+                    Tác giả
+                </label>
+
+                <input asp-for="Author"
+                       class="form-control"
+                       placeholder="Nhập tên tác giả..." />
+
+                <span asp-validation-for="Author"
+                      class="text-danger">
+                </span>
+
+            </div>
+
+
+            <!-- CATEGORY -->
+
+            <div class="admin-form-group">
+
+                <label asp-for="CategoryId">
+                    Danh mục
+                </label>
+
+                <select asp-for="CategoryId"
+                        asp-items="ViewBag.Categories"
+                        class="form-select">
+
+                    <option value="">
+                        -- Chọn danh mục --
+                    </option>
+
+                </select>
+
+                <span asp-validation-for="CategoryId"
+                      class="text-danger">
+                </span>
+
+            </div>
+
+
+            <!-- QUANTITY -->
+
+            <div class="admin-form-group">
+
+                <label asp-for="AvailableQuantity">
+                    Số lượng
+                </label>
+
+                <input asp-for="AvailableQuantity"
+                       type="number"
+                       min="0"
+                       class="form-control" />
+
+                <span asp-validation-for="AvailableQuantity"
+                      class="text-danger">
+                </span>
+
+            </div>
+
+
+            <!-- IMAGE -->
+
+            <div class="admin-form-group">
+
+                <label>
+                    Ảnh bìa
+                </label>
+
+                <input type="file"
+                       name="imageFile"
+                       class="form-control"
+                       accept="image/*" />
+
+                <small class="text-muted">
+                    JPG, JPEG, PNG, WEBP
+                </small>
+
+            </div>
+
+
+            <!-- BUTTON -->
+
+            <div class="admin-form-actions">
+
+                <a asp-action="Index"
+                   class="admin-cancel">
+
+                    Hủy
+
+                </a>
+
+                <button type="submit"
+                        class="admin-submit">
+
+                    + Thêm sách
+
+                </button>
+
+            </div>
+
+        </form>
+
+    </div>
+
+</div>
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync(
+            "_ValidationScriptsPartial");
+    }
+}

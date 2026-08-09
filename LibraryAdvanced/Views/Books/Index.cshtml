@@ -1,0 +1,693 @@
+﻿@using Microsoft.AspNetCore.Http
+@model IEnumerable<LibraryAdvanced.Models.Book>
+
+@{
+    var role = Context.Session.GetString("Role");
+
+    ViewData["Title"] =
+        role == "Admin"
+            ? "Quản lý sách"
+            : "Xem sách";
+
+
+    var categories =
+        ViewBag.Categories as List<LibraryAdvanced.Models.Category>
+        ?? new List<LibraryAdvanced.Models.Category>();
+
+
+    string? search = ViewBag.Search;
+
+    int? categoryId = ViewBag.CategoryId;
+
+    string? status = ViewBag.Status;
+}
+
+
+@if (role == "Admin")
+{
+    <!-- =====================================================
+         ADMIN - QUẢN LÝ SÁCH
+    ====================================================== -->
+
+    <div class="books-header">
+
+        <div>
+
+            <span class="page-label">
+                QUẢN TRỊ
+            </span>
+
+            <h1>
+                Quản lý sách
+            </h1>
+
+            <p>
+                Quản lý toàn bộ sách trong thư viện.
+            </p>
+
+        </div>
+
+
+        <!-- THÊM SÁCH -->
+
+        <a asp-controller="Books"
+           asp-action="Create"
+           class="admin-add-button">
+
+            + Thêm sách
+
+        </a>
+
+    </div>
+
+
+
+    <!-- =====================================================
+         SEARCH + FILTER
+    ====================================================== -->
+
+    <form asp-controller="Books"
+          asp-action="Index"
+          method="get"
+          class="book-filter">
+
+
+        <div class="search-box">
+
+            <span>
+                🔍
+            </span>
+
+            <input type="text"
+                   name="search"
+                   value="@search"
+                   placeholder="Tìm tên sách hoặc tác giả..." />
+
+        </div>
+
+
+        <select name="categoryId"
+                class="filter-select">
+
+            <option value="">
+                Tất cả thể loại
+            </option>
+
+
+            @foreach (var category in categories)
+            {
+                if (categoryId == category.Id)
+                {
+                    <option value="@category.Id"
+                            selected>
+
+                        @category.Name
+
+                    </option>
+                }
+                else
+                {
+                    <option value="@category.Id">
+
+                        @category.Name
+
+                    </option>
+                }
+            }
+
+        </select>
+
+
+
+        <select name="status"
+                class="filter-select">
+
+            <option value="">
+                Tất cả tình trạng
+            </option>
+
+
+            @if (status == "available")
+            {
+                <option value="available"
+                        selected>
+
+                    Còn sách
+
+                </option>
+            }
+            else
+            {
+                <option value="available">
+
+                    Còn sách
+
+                </option>
+            }
+
+
+            @if (status == "unavailable")
+            {
+                <option value="unavailable"
+                        selected>
+
+                    Hết sách
+
+                </option>
+            }
+            else
+            {
+                <option value="unavailable">
+
+                    Hết sách
+
+                </option>
+            }
+
+        </select>
+
+
+        <button type="submit"
+                class="search-button">
+
+            Tìm kiếm
+
+        </button>
+
+    </form>
+
+
+
+    <!-- =====================================================
+         RESULT HEADER
+    ====================================================== -->
+
+    <div class="books-result-header">
+
+        <div>
+
+            <strong>
+                Danh sách sách
+            </strong>
+
+            <span>
+                @Model.Count() sách
+            </span>
+
+        </div>
+
+    </div>
+
+
+
+    <!-- =====================================================
+         ADMIN TABLE
+    ====================================================== -->
+    @if (Model.Any())
+    {
+        <div class="admin-book-table-wrapper">
+
+            <table class="admin-book-table">
+
+                <thead>
+
+                    <tr>
+
+                        <th>
+                            Ảnh
+                        </th>
+
+                        <th>
+                            Tên sách
+                        </th>
+
+                        <th>
+                            Tác giả
+                        </th>
+
+                        <th>
+                            Thể loại
+                        </th>
+
+                        <th>
+                            Số lượng
+                        </th>
+
+                        <th>
+                            Tình trạng
+                        </th>
+
+                        <th>
+                            Thao tác
+                        </th>
+
+                    </tr>
+
+                </thead>
+
+
+                <tbody>
+
+                    @foreach (var book in Model)
+                    {
+                        <tr>
+
+
+                            <!-- ẢNH -->
+
+                            <td>
+
+                                <div class="admin-book-cover">
+
+                                    <img src="/uploads/books/@(book.Id).jpg"
+                                         alt="@book.Title"
+                                         onerror="this.style.display='none';" />
+
+                                    <span>
+                                        📖
+                                    </span>
+
+                                </div>
+
+                            </td>
+
+
+                            <!-- TÊN -->
+
+                            <td>
+
+                                <strong>
+                                    @book.Title
+                                </strong>
+
+                            </td>
+
+
+                            <!-- TÁC GIẢ -->
+
+                            <td>
+
+                                @book.Author
+
+                            </td>
+
+
+                            <!-- CATEGORY -->
+
+                            <td>
+
+                                @(book.Category?.Name
+                                    ?? "Chưa phân loại")
+
+                            </td>
+
+
+                            <!-- QUANTITY -->
+
+                            <td>
+
+                                @book.AvailableQuantity
+
+                            </td>
+
+
+                            <!-- STATUS -->
+
+                            <td>
+
+                                @if (book.AvailableQuantity > 0)
+                                {
+                                    <span class="book-status available">
+
+                                        Còn sách
+
+                                    </span>
+                                }
+                                else
+                                {
+                                    <span class="book-status unavailable">
+
+                                        Hết sách
+
+                                    </span>
+                                }
+
+                            </td>
+
+
+                            <!-- ACTION -->
+
+                            <td>
+
+                                <div class="admin-book-actions">
+
+
+                                    <!-- DETAIL -->
+
+                                    <a asp-controller="Books"
+                                       asp-action="Details"
+                                       asp-route-id="@book.Id"
+                                       class="book-action detail"
+                                       title="Chi tiết">
+
+                                        👁️
+
+                                    </a>
+
+
+                                    <!-- EDIT -->
+
+                                    <a asp-controller="Books"
+                                       asp-action="Edit"
+                                       asp-route-id="@book.Id"
+                                       class="book-action edit"
+                                       title="Sửa">
+
+                                        ✏️
+
+                                    </a>
+
+
+                                    <!-- DELETE -->
+
+                                    <a asp-controller="Books"
+                                       asp-action="Delete"
+                                       asp-route-id="@book.Id"
+                                       class="book-action delete"
+                                       title="Xóa">
+
+                                        🗑️
+
+                                    </a>
+
+
+                                </div>
+
+                            </td>
+
+                        </tr>
+                    }
+
+                </tbody>
+
+            </table>
+
+        </div>
+    }
+    else
+    {
+        <div class="empty-books">
+
+            <div>
+                📚
+            </div>
+
+            <h3>
+                Không tìm thấy sách
+            </h3>
+
+            <p>
+                Hãy thử tìm kiếm với từ khóa khác.
+            </p>
+
+            <a asp-controller="Books"
+               asp-action="Index">
+
+                Xem tất cả sách
+
+            </a>
+
+        </div>
+    }
+
+}
+else
+{
+    <!-- =====================================================
+         READER - XEM SÁCH
+         GIỮ NGUYÊN GIAO DIỆN CŨ CỦA BẠN
+    ====================================================== -->
+    <!-- HEADER -->
+
+    <div class="books-header">
+
+        <div>
+
+            <span class="page-label">
+                THƯ VIỆN
+            </span>
+
+            <h1>
+                Danh sách sách
+            </h1>
+
+            <p>
+                Tìm kiếm và khám phá những cuốn sách trong thư viện.
+            </p>
+
+        </div>
+
+    </div>
+
+
+
+    <!-- SEARCH + FILTER -->
+
+    <form asp-controller="Books"
+          asp-action="Index"
+          method="get"
+          class="book-filter">
+
+
+        <div class="search-box">
+
+            <span>
+                🔍
+            </span>
+
+            <input type="text"
+                   name="search"
+                   value="@search"
+                   placeholder="Tìm tên sách hoặc tác giả..." />
+
+        </div>
+
+
+        <select name="categoryId"
+                class="filter-select">
+
+            <option value="">
+                Tất cả thể loại
+            </option>
+
+
+            @foreach (var category in categories)
+            {
+                if (categoryId == category.Id)
+                {
+                    <option value="@category.Id"
+                            selected>
+
+                        @category.Name
+
+                    </option>
+                }
+                else
+                {
+                    <option value="@category.Id">
+
+                        @category.Name
+
+                    </option>
+                }
+            }
+
+        </select>
+
+
+        <select name="status"
+                class="filter-select">
+
+            <option value="">
+                Tất cả tình trạng
+            </option>
+
+
+            @if (status == "available")
+            {
+                <option value="available"
+                        selected>
+
+                    Còn sách
+
+                </option>
+            }
+            else
+            {
+                <option value="available">
+
+                    Còn sách
+
+                </option>
+            }
+
+
+            @if (status == "unavailable")
+            {
+                <option value="unavailable"
+                        selected>
+
+                    Hết sách
+
+                </option>
+            }
+            else
+            {
+                <option value="unavailable">
+
+                    Hết sách
+
+                </option>
+            }
+
+        </select>
+
+
+        <button type="submit"
+                class="search-button">
+
+            Tìm kiếm
+
+        </button>
+
+    </form>
+
+
+
+    <!-- RESULT -->
+
+    <div class="books-result-header">
+
+        <div>
+
+            <strong>
+                Tất cả sách
+            </strong>
+
+            <span>
+                @Model.Count() sách
+            </span>
+
+        </div>
+
+    </div>
+
+
+
+    <!-- BOOK LIST -->
+    @if (Model.Any())
+    {
+        <div class="books-grid">
+
+            @foreach (var book in Model)
+            {
+                <div class="book-card">
+
+
+                    <!-- BOOK ICON -->
+
+                    <div class="book-cover">
+
+                        <span>
+                            📖
+                        </span>
+
+                    </div>
+
+
+                    <!-- INFO -->
+
+                    <div class="book-card-body">
+
+                        <div class="book-category">
+
+                            @(book.Category?.Name
+                                ?? "Chưa phân loại")
+
+                        </div>
+
+
+                        <h2>
+                            @book.Title
+                        </h2>
+
+
+                        <p class="book-author">
+                            @book.Author
+                        </p>
+
+
+                        <div class="book-bottom">
+
+                            @if (book.AvailableQuantity > 0)
+                            {
+                                <span class="book-status available">
+
+                                    Còn @book.AvailableQuantity cuốn
+
+                                </span>
+                            }
+                            else
+                            {
+                                <span class="book-status unavailable">
+
+                                    Hết sách
+
+                                </span>
+                            }
+
+
+                            <a asp-controller="Books"
+                               asp-action="Details"
+                               asp-route-id="@book.Id"
+                               class="book-detail">
+
+                                Chi tiết →
+
+                            </a>
+
+                        </div>
+
+                    </div>
+
+                </div>
+            }
+
+        </div>
+    }
+    else
+    {
+        <div class="empty-books">
+
+            <div>
+                📚
+            </div>
+
+            <h3>
+                Không tìm thấy sách
+            </h3>
+
+            <p>
+                Hãy thử tìm kiếm với từ khóa khác.
+            </p>
+
+            <a asp-controller="Books"
+               asp-action="Index">
+
+                Xem tất cả sách
+
+            </a>
+
+        </div>
+    }
+}

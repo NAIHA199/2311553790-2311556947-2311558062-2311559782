@@ -1,0 +1,140 @@
+﻿@model IEnumerable<LibraryAdvanced.Models.LoanTicket>
+
+@{
+    ViewData["Title"] = "Lịch sử mượn";
+}
+
+<div class="history-page">
+
+    <div class="history-header">
+
+        <span class="page-label">
+            THƯ VIỆN CỦA TÔI
+        </span>
+
+        <h1>
+            Lịch sử mượn
+        </h1>
+
+        <p>
+            Xem lại những phiếu mượn sách trước đây.
+        </p>
+
+    </div>
+
+
+    @if (Model.Any())
+    {
+        <div class="history-list">
+
+            @foreach (var loan in Model)
+            {
+                <div class="history-card">
+
+                    <!-- ICON -->
+
+                    <div class="history-icon">
+                        📚
+                    </div>
+
+
+                    <!-- INFORMATION -->
+
+                    <div class="history-info">
+
+                        <h2>
+                            Phiếu mượn #@loan.Id
+                        </h2>
+
+                        <p>
+                            Người mượn:
+                            <strong>
+                                @loan.BorrowerName
+                            </strong>
+                        </p>
+
+                        <p>
+                            Ngày mượn:
+                            @loan.BorrowDate
+                        </p>
+
+                    </div>
+
+
+                    <!-- BOOK -->
+
+                    <div class="history-books">
+
+                        <span class="history-title">
+                            Sách
+                        </span>
+
+                        @foreach (var detail in loan.LoanDetails)
+                        {
+                            <div class="history-book">
+
+                                <span>
+                                    @(detail.Book?.Title ?? "Không xác định")
+                                </span>
+
+                                <strong>
+                                    x @detail.Quantity
+                                </strong>
+
+                            </div>
+                        }
+
+                    </div>
+
+
+                    <!-- STATUS -->
+
+                    <div class="history-status">
+
+                        @if (loan.Status == "Returned")
+                        {
+                            <span class="returned">
+                                Đã trả
+                            </span>
+                        }
+                        else
+                        {
+                            <span class="other-status">
+                                @loan.Status
+                            </span>
+                        }
+
+                    </div>
+
+                </div>
+            }
+
+        </div>
+    }
+    else
+    {
+        <div class="history-empty">
+
+            <div>
+                📋
+            </div>
+
+            <h2>
+                Chưa có lịch sử mượn
+            </h2>
+
+            <p>
+                Các phiếu mượn đã hoàn tất sẽ xuất hiện ở đây.
+            </p>
+
+            <a asp-controller="Books"
+               asp-action="Index">
+
+                Xem sách →
+
+            </a>
+
+        </div>
+    }
+
+</div>

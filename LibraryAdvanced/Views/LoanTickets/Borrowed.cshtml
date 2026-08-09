@@ -1,0 +1,123 @@
+﻿@model IEnumerable<LibraryAdvanced.Models.LoanTicket>
+
+@{
+    ViewData["Title"] = "Sách đang mượn";
+}
+
+<div class="borrowed-page">
+
+    <div class="borrowed-header">
+
+        <span class="page-label">
+            THƯ VIỆN CỦA TÔI
+        </span>
+
+        <h1>
+            Sách đang mượn
+        </h1>
+
+        <p>
+            Danh sách những cuốn sách hiện đang được mượn.
+        </p>
+
+    </div>
+
+
+    @if (Model.Any())
+    {
+        <div class="borrowed-list">
+
+            @foreach (var loan in Model)
+            {
+                <div class="borrowed-card">
+
+                    <div class="borrowed-icon">
+                        📖
+                    </div>
+
+
+                    <div class="borrowed-info">
+
+                        <h2>
+                            Phiếu mượn #@loan.Id
+                        </h2>
+
+                        <p>
+                            Người mượn:
+                            <strong>
+                                @loan.BorrowerName
+                            </strong>
+                        </p>
+
+                        <p>
+                            Ngày mượn:
+                            @loan.BorrowDate
+                        </p>
+
+                    </div>
+
+
+                    <div class="borrowed-books">
+
+                        <span class="borrowed-title">
+                            Sách đã mượn
+                        </span>
+
+                        @foreach (var detail in loan.LoanDetails)
+                        {
+                            <div class="borrowed-book">
+
+                                <span>
+                                    @(detail.Book?.Title ?? "Không xác định")
+                                </span>
+
+                                <strong>
+                                    x @detail.Quantity
+                                </strong>
+
+                            </div>
+                        }
+
+                    </div>
+
+
+                    <div class="borrowed-status">
+
+                        <span>
+                            Đang mượn
+                        </span>
+
+                    </div>
+
+                </div>
+            }
+
+        </div>
+    }
+    else
+    {
+        <div class="borrowed-empty">
+
+            <div class="empty-icon">
+                📚
+            </div>
+
+            <h2>
+                Chưa có sách đang mượn
+            </h2>
+
+            <p>
+                Bạn hiện không có sách nào đang mượn.
+            </p>
+
+            <a asp-controller="Books"
+               asp-action="Index">
+
+                Xem sách →
+
+            </a>
+
+        </div>
+    }
+
+</div>

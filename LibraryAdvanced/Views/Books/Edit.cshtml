@@ -1,0 +1,151 @@
+﻿@model LibraryAdvanced.Models.Book
+
+@{
+    ViewData["Title"] = "Sửa sách";
+}
+
+<div class="admin-book-page">
+
+    <div class="admin-book-header">
+
+        <span>
+            QUẢN TRỊ
+        </span>
+
+        <h1>
+            Sửa sách
+        </h1>
+
+        <p>
+            Cập nhật thông tin sách.
+        </p>
+
+    </div>
+
+
+    <div class="admin-book-card">
+
+        <form asp-action="Edit"
+              method="post"
+              enctype="multipart/form-data">
+
+            @Html.AntiForgeryToken()
+
+            <input type="hidden"
+                   asp-for="Id" />
+
+
+            <div asp-validation-summary="ModelOnly"
+                 class="text-danger mb-3">
+            </div>
+
+
+            <div class="admin-form-group">
+
+                <label asp-for="Title">
+                    Tên sách
+                </label>
+
+                <input asp-for="Title"
+                       class="form-control" />
+
+                <span asp-validation-for="Title"
+                      class="text-danger">
+                </span>
+
+            </div>
+
+
+            <div class="admin-form-group">
+
+                <label asp-for="Author">
+                    Tác giả
+                </label>
+
+                <input asp-for="Author"
+                       class="form-control" />
+
+                <span asp-validation-for="Author"
+                      class="text-danger">
+                </span>
+
+            </div>
+
+
+            <div class="admin-form-group">
+
+                <label asp-for="CategoryId">
+                    Danh mục
+                </label>
+
+                <select asp-for="CategoryId"
+                        asp-items="ViewBag.Categories"
+                        class="form-select">
+
+                    <option value="">
+                        -- Chọn danh mục --
+                    </option>
+
+                </select>
+
+            </div>
+
+
+            <div class="admin-form-group">
+
+                <label asp-for="AvailableQuantity">
+                    Số lượng
+                </label>
+
+                <input asp-for="AvailableQuantity"
+                       type="number"
+                       min="0"
+                       class="form-control" />
+
+            </div>
+
+
+            <div class="admin-form-group">
+
+                <label>
+                    Thay ảnh bìa
+                </label>
+
+                <input type="file"
+                       name="imageFile"
+                       class="form-control"
+                       accept="image/*" />
+
+            </div>
+
+
+            <div class="admin-form-actions">
+
+                <a asp-action="Index"
+                   class="admin-cancel">
+
+                    Hủy
+
+                </a>
+
+                <button type="submit"
+                        class="admin-submit">
+
+                    Lưu thay đổi
+
+                </button>
+
+            </div>
+
+        </form>
+
+    </div>
+
+</div>
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync(
+            "_ValidationScriptsPartial");
+    }
+}

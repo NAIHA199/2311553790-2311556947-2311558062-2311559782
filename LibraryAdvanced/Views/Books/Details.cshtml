@@ -1,0 +1,175 @@
+﻿@model LibraryAdvanced.Models.Book
+
+@{
+    ViewData["Title"] = "Chi tiết sách";
+}
+
+<div class="book-detail-page">
+
+    <!-- QUAY LẠI -->
+
+    <a asp-controller="Books"
+       asp-action="Index"
+       class="back-books">
+
+        ← Quay lại danh sách sách
+
+    </a>
+
+
+    <!-- DETAIL -->
+
+    <div class="book-detail-card">
+
+        <!-- BOOK COVER -->
+
+        <div class="detail-cover">
+
+            <div class="detail-book-icon">
+                📖
+            </div>
+
+        </div>
+
+
+        <!-- BOOK INFORMATION -->
+
+        <div class="detail-information">
+
+            <span class="detail-category">
+                @(Model.Category?.Name ?? "Chưa phân loại")
+            </span>
+
+
+            <h1>
+                @Model.Title
+            </h1>
+
+
+            <p class="detail-author">
+                Tác giả:
+                <strong>
+                    @Model.Author
+                </strong>
+            </p>
+
+
+            <div class="detail-divider"></div>
+
+
+            <!-- INFORMATION -->
+
+            <div class="detail-row">
+
+                <span>
+                    Thể loại
+                </span>
+
+                <strong>
+                    @(Model.Category?.Name ?? "Chưa có")
+                </strong>
+
+            </div>
+
+
+            <div class="detail-row">
+
+                <span>
+                    Tác giả
+                </span>
+
+                <strong>
+                    @Model.Author
+                </strong>
+
+            </div>
+
+
+            <div class="detail-row">
+
+                <span>
+                    Số lượng còn
+                </span>
+
+                <strong>
+                    @Model.AvailableQuantity
+                </strong>
+
+            </div>
+
+
+            <!-- STATUS -->
+
+            <div class="detail-availability">
+
+                @if (Model.AvailableQuantity > 0)
+                {
+                    <span class="detail-status available">
+                        ✓ Đang có sẵn
+                    </span>
+                }
+                else
+                {
+                    <span class="detail-status unavailable">
+                        ✕ Hết sách
+                    </span>
+                }
+
+            </div>
+
+
+            <!-- ACTION -->
+            @if (Model.AvailableQuantity > 0)
+            {
+                @if (Model.AvailableQuantity > 0)
+                {
+                    <a asp-controller="LoanTickets"
+                       asp-action="Create"
+                       asp-route-bookId="@Model.Id"
+                       class="borrow-button">
+
+                        📖 Mượn sách
+
+                    </a>
+                }
+                else
+                {
+                    <button class="borrow-button disabled"
+                            disabled>
+
+                        Hết sách
+
+                    </button>
+                }
+            }
+            else
+            {
+                <button class="borrow-button disabled"
+                        disabled>
+
+                    Hết sách
+
+                </button>
+            }
+
+        </div>
+
+    </div>
+
+
+    <!-- DESCRIPTION -->
+
+    <div class="book-description">
+
+        <h2>
+            Thông tin sách
+        </h2>
+
+        <p>
+            Thông tin chi tiết của sách được lấy từ dữ liệu
+            hiện có trong hệ thống thư viện.
+        </p>
+
+    </div>
+
+</div>

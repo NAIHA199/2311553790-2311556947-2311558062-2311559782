@@ -1,0 +1,323 @@
+﻿@model IEnumerable<LibraryAdvanced.Models.LoanTicket>
+
+@{
+    ViewData["Title"] = "Tạo Phiếu Trả Sách";
+}
+
+
+<div class="return-page">
+
+
+    <!-- =========================================
+         HEADER
+    ========================================== -->
+
+    <div class="return-header">
+
+        <a asp-controller="LoanTickets"
+           asp-action="Index"
+           class="return-back">
+
+            ← Quay lại quản lý mượn
+
+        </a>
+
+
+        <span class="page-label">
+            QUẢN TRỊ
+        </span>
+
+
+        <h1>
+            Tạo Phiếu Trả Sách
+        </h1>
+
+
+        <p>
+            Chọn từng cuốn sách mà độc giả đã trả.
+        </p>
+
+    </div>
+
+
+
+    <!-- =========================================
+         SUCCESS / ERROR
+    ========================================== -->
+    @if (TempData["Success"] != null)
+    {
+        <div class="alert alert-success">
+
+            @TempData["Success"]
+
+        </div>
+    }
+
+
+    @if (TempData["Error"] != null)
+    {
+        <div class="alert alert-danger">
+
+            @TempData["Error"]
+
+        </div>
+    }
+
+
+
+    <!-- =========================================
+         DANH SÁCH PHIẾU ĐANG MƯỢN
+    ========================================== -->
+    @if (Model.Any())
+    {
+        <div class="return-list">
+
+            @foreach (var loan in Model)
+            {
+                <div class="return-card">
+
+
+                    <!-- =============================
+                         THÔNG TIN PHIẾU
+                    ============================== -->
+
+                    <div class="return-card-header">
+
+                        <div>
+
+                            <span class="return-ticket">
+
+                                Phiếu #@loan.Id
+
+                            </span>
+
+
+                            <h2>
+
+                                @loan.BorrowerName
+
+                            </h2>
+
+                        </div>
+
+
+                        <span class="return-status">
+
+                            Đang mượn
+
+                        </span>
+
+                    </div>
+
+
+
+                    <!-- =============================
+                         NGÀY MƯỢN
+                    ============================== -->
+
+                    <div class="return-date">
+
+                        Ngày mượn:
+
+                        <strong>
+
+                            @(loan.BorrowDate.HasValue
+                                ? loan.BorrowDate.Value
+                                    .ToString("dd/MM/yyyy HH:mm")
+                                : "Chưa có")
+
+                        </strong>
+
+                    </div>
+
+
+
+                    <!-- =============================
+                         DANH SÁCH SÁCH
+                    ============================== -->
+
+                    <div class="return-books">
+
+                        <h3>
+                            Sách trong phiếu
+                        </h3>
+
+
+                        @foreach (var detail in loan.LoanDetails)
+                        {
+                            var remaining =
+                                detail.Quantity
+                                - detail.ReturnedQuantity;
+
+
+                            <div class="return-book-row">
+
+
+                                <!-- THÔNG TIN SÁCH -->
+
+                                <div class="return-book-info">
+
+                                    <strong>
+
+                                        @(detail.Book?.Title
+                                            ?? $"Sách #{detail.BookId}")
+
+                                    </strong>
+
+
+                                    <small>
+
+                                        Đã mượn:
+                                        @detail.Quantity
+
+                                        &nbsp; | &nbsp;
+
+                                        Đã trả:
+                                        @detail.ReturnedQuantity
+
+                                        &nbsp; | &nbsp;
+
+                                        Còn:
+                                        @remaining
+
+                                    </small>
+
+                                </div>
+
+
+
+                                <!-- NÚT TRẢ -->
+
+                                <div>
+
+                                    @if (remaining > 0)
+                                    {
+                                        <form asp-controller="LoanTickets"
+                                              asp-action="ConfirmReturn"
+                                              method="post"
+                                              onsubmit="return confirmReturn('@detail.Book?.Title');">
+
+                                            @Html.AntiForgeryToken()
+
+
+                                            <input type="hidden"
+                                                   name="loanTicketId"
+                                                   value="@loan.Id" />
+
+
+                                            <input type="hidden"
+                                                   name="bookId"
+                                                   value="@detail.BookId" />
+
+
+                                            <button type="submit"
+                                                    class="return-confirm-button">
+
+                                                ↩ Trả 1 cuốn
+
+                                            </button>
+
+                                        </form>
+                                    }
+                                    else
+                                    {
+                                        <span class="book-returned">
+
+                                            ✓ Đã trả đủ
+
+                                        </span>
+                                    }
+
+                                </div>
+
+                            </div>
+                        }
+
+                    </div>
+
+
+
+                    <!-- =============================
+                         TRẠNG THÁI PHIẾU
+                    ============================== -->
+
+                    <div class="return-ticket-footer">
+
+                        <span>
+                            Tổng số loại sách:
+                            <strong>
+                                @loan.LoanDetails.Count()
+                            </strong>
+                        </span>
+
+
+                        <span>
+                            Tổng số lượng:
+                            <strong>
+                                @loan.LoanDetails.Sum(x => x.Quantity)
+                            </strong>
+                        </span>
+
+                    </div>
+
+                </div>
+            }
+
+        </div>
+    }
+    else
+    {
+        <!-- =========================================
+             KHÔNG CÒN PHIẾU ĐANG MƯỢN
+        ========================================== -->
+
+        <div class="return-empty">
+
+            <div class="return-empty-icon">
+                📚
+            </div>
+
+
+            <h2>
+                Không có sách cần trả
+            </h2>
+
+
+            <p>
+                Hiện tại không có phiếu mượn nào đang ở trạng thái mượn.
+            </p>
+
+
+            <a asp-controller="LoanTickets"
+               asp-action="Index"
+               class="return-back-button">
+
+                ← Quay lại quản lý mượn
+
+            </a>
+
+        </div>
+    }
+
+</div>
+
+
+
+@section Scripts {
+
+    <script>
+
+        function confirmReturn(bookName) {
+            if (!bookName) {
+                bookName = "sách này";
+            }
+
+            return confirm(
+                "Xác nhận đã nhận lại 1 cuốn \"" +
+                bookName +
+                "\"?"
+            );
+        }
+
+    </script>
+}

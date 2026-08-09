@@ -1,39 +1,472 @@
 ﻿@model LibraryAdvanced.ViewModel.StatisticsViewModel
 
-<h2>Thống Kê Thư Viện (Dashboard)</h2>
+@using System.Text.Json
 
-<div class="row my-4">
-    <div class="col-md-6">
-        <div class="card text-white bg-primary mb-3">
-            <div class="card-header">Sách Đang Được Mượn</div>
-            <div class="card-body">
-                <h3 class="card-title">@Model.TotalActiveBorrowedBooks Cuốn</h3>
-                <p class="card-text">Tổng số lượng sách thuộc các phiếu mượn chưa trả ('Borrowed').</p>
-            </div>
-        </div>
+
+@{
+    ViewData["Title"] = "Thống kê thư viện";
+
+    var chartData =
+        ViewBag.ChartData
+        ?? new List<object>();
+
+    var tuNgay =
+        ViewBag.TuNgay as string
+        ?? DateTime.Now.AddDays(-30).ToString("yyyy-MM-dd");
+
+    var denNgay =
+        ViewBag.DenNgay as string
+        ?? DateTime.Now.ToString("yyyy-MM-dd");
+
+    var chartJson =
+        JsonSerializer.Serialize(chartData);
+}
+
+
+<div class="statistics-page">
+
+
+    <!-- =========================================
+         HEADER
+    ========================================== -->
+
+    <div class="statistics-header">
+
+        <span class="page-label">
+            QUẢN TRỊ
+        </span>
+
+        <h1>
+            Thống kê thư viện
+        </h1>
+
+        <p>
+            Tổng quan hoạt động mượn sách trong thư viện.
+        </p>
+
     </div>
+
+
+
+    <!-- =========================================
+         1. SÁCH ĐANG MƯỢN
+         GIỮ NGUYÊN
+    ========================================== -->
+
+    <div class="row my-4">
+
+        <div class="col-md-6">
+
+            <div class="card text-white bg-primary mb-3">
+
+                <div class="card-header">
+
+                    Sách Đang Được Mượn
+
+                </div>
+
+
+                <div class="card-body">
+
+                    <h3 class="card-title">
+
+                        @Model.TotalActiveBorrowedBooks Cuốn
+
+                    </h3>
+
+
+                    <p class="card-text">
+
+                        Tổng số lượng sách thuộc các
+                        phiếu mượn chưa trả
+                        ('Borrowed').
+
+                    </p>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+
+
+    <!-- =========================================
+         2. TOP 3
+         GIỮ NGUYÊN
+    ========================================== -->
+
+    <h3 class="statistics-section-title">
+
+        Top 3 Cuốn Sách Mượn Nhiều Nhất
+
+    </h3>
+
+
+    <table class="table table-striped table-hover mt-3">
+
+        <thead class="table-dark">
+
+            <tr>
+
+                <th>
+                    #
+                </th>
+
+                <th>
+                    Tên Sách
+                </th>
+
+                <th>
+                    Tổng Số Lượt / Số Lượng Đã Mượn
+                </th>
+
+            </tr>
+
+        </thead>
+
+
+        <tbody>
+
+            @{
+                int index = 1;
+            }
+
+
+            @foreach (var book in Model.Top3Books)
+            {
+                <tr>
+
+                    <td>
+                        @(index++)
+                    </td>
+
+
+                    <td>
+
+                        <strong>
+                            @book.BookTitle
+                        </strong>
+
+                    </td>
+
+
+                    <td>
+
+                        <span class="badge bg-success fs-6">
+
+                            @book.TotalBorrowedQuantity
+
+                        </span>
+
+                    </td>
+
+                </tr>
+            }
+
+        </tbody>
+
+    </table>
+
+
+
+    <!-- =========================================
+         3. BIỂU ĐỒ
+         MỚI
+    ========================================== -->
+
+    <div class="statistics-chart-card mt-5">
+
+
+        <div class="statistics-card-header">
+
+            <div>
+
+                <h3>
+                    📊 Số Lượng Sách Được Mượn
+                </h3>
+
+                <p>
+                    Thống kê theo khoảng thời gian.
+                </p>
+
+            </div>
+
+        </div>
+
+
+
+        <!-- =====================================
+             FILTER NGÀY
+        ====================================== -->
+
+        <div class="statistics-filter">
+
+
+            <div class="statistics-filter-item">
+
+                <label for="tuNgay">
+                    Từ ngày
+                </label>
+
+                <input id="tuNgay"
+                       type="date"
+                       class="form-control"
+                       value="@tuNgay" />
+
+            </div>
+
+
+
+            <div class="statistics-filter-item">
+
+                <label for="denNgay">
+                    Đến ngày
+                </label>
+
+                <input id="denNgay"
+                       type="date"
+                       class="form-control"
+                       value="@denNgay" />
+
+            </div>
+
+
+
+            <div class="statistics-filter-button">
+
+                <button type="button"
+                        id="btnTraCuu"
+                        class="btn btn-primary">
+
+                    🔍 Tra cứu
+
+                </button>
+
+            </div>
+
+        </div>
+
+
+
+        <!-- =====================================
+             CHART
+        ====================================== -->
+
+        <div class="chart-container">
+
+            <canvas id="myChart"></canvas>
+
+        </div>
+
+
+    </div>
+
 </div>
 
-<h3>Top 3 Cuốn Sách Mượn Nhiều Nhất </h3>
-<table class="table table-striped table-hover mt-3">
-    <thead class="table-dark">
-        <tr>
-            <th>#</th>
-            <th>Tên Sách</th>
-            <th>Tổng Số Lượt / Số Lượng Đã Mượn</th>
-        </tr>
-    </thead>
-    <tbody>
-        @{
-            int index = 1;
+
+
+<!-- =========================================
+     CHART.JS
+========================================= -->
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+
+
+@section Scripts {
+
+    <script>
+
+        let myChart = null;
+
+
+        // =====================================
+        // DỮ LIỆU BAN ĐẦU
+        // =====================================
+
+        const initialData =
+                    @Html.Raw(chartJson);
+
+
+
+        // =====================================
+        // VẼ BIỂU ĐỒ
+        // =====================================
+
+        function drawChart(data) {
+
+            const labels =
+                data.map(
+                    item => item.BookTitle
+                );
+
+
+            const statistics =
+                data.map(
+                    item => item.SoLuongMuon
+                );
+
+
+            // Xóa chart cũ
+            if (myChart !== null) {
+                myChart.destroy();
+            }
+
+
+            const ctx =
+                document
+                    .getElementById("myChart");
+
+
+            myChart =
+                new Chart(
+                    ctx,
+                    {
+
+                        type: "bar",
+
+
+                        data:
+                        {
+                            labels: labels,
+
+
+                            datasets:
+                                [
+                                    {
+
+                                        label:
+                                            "Số lượng sách được mượn",
+
+
+                                        data:
+                                            statistics,
+
+
+                                        borderWidth:
+                                            1
+
+                                    }
+                                ]
+                        },
+
+
+                        options:
+                        {
+                            responsive: true,
+
+
+                            maintainAspectRatio:
+                                false,
+
+
+                            scales:
+                            {
+                                y:
+                                {
+                                    beginAtZero:
+                                        true,
+
+
+                                    ticks:
+                                    {
+                                        precision:
+                                            0
+                                    }
+                                }
+                            },
+
+
+                            plugins:
+                            {
+                                legend:
+                                {
+                                    display:
+                                        true
+                                }
+                            }
+                        }
+
+                    }
+                );
         }
-        @foreach (var book in Model.Top3Books)
-        {
-            <tr>
-                <td>@(index++)</td>
-                <td><strong>@book.BookTitle</strong></td>
-                <td><span class="badge bg-success fs-6">@book.TotalBorrowedQuantity</span></td>
-            </tr>
-        }
-    </tbody>
-</table>
+
+
+
+        // =====================================
+        // KHI TRANG LOAD
+        // =====================================
+
+        $(document).ready(function() {
+
+            // Vẽ dữ liệu mặc định
+            drawChart(initialData);
+
+
+
+            // =================================
+            // TRA CỨU
+            // =================================
+
+            $("#btnTraCuu").click(function() {
+                const tuNgay =
+                    $("#tuNgay").val();
+
+                const denNgay =
+                    $("#denNgay").val();
+
+
+                if (!tuNgay || !denNgay) {
+                    alert(
+                        "Vui lòng chọn đầy đủ ngày."
+                    );
+
+                    return;
+                }
+
+
+                if (tuNgay > denNgay) {
+                    alert(
+                        "Từ ngày không được lớn hơn đến ngày."
+                    );
+
+                    return;
+                }
+
+
+                $.ajax(
+                    {
+                        url:
+                            "/Statistics/GetBorrowedBooksChart",
+
+                        type:
+                            "GET",
+
+                        data:
+                        {
+                            TuNgay:
+                                tuNgay,
+
+                            DenNgay:
+                                denNgay
+                        },
+
+                        success:
+                            function(data) {
+                                drawChart(data);
+                            },
+
+                        error:
+                            function() {
+                                alert(
+                                    "Không thể tải dữ liệu thống kê."
+                                );
+                            }
+                    });
+            });
+    </script>
+
+}

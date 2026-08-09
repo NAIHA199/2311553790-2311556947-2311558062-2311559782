@@ -1,4 +1,5 @@
-﻿using LibraryAdvanced.Models;
+﻿using LibraryAdvanced.Authorization;
+using LibraryAdvanced.Models;
 using LibraryAdvanced.ViewModels;
 using LibraryManagement.ViewModels;
 using Microsoft.AspNetCore.Mvc;
@@ -46,86 +47,411 @@ public class LoanTicketsController : Controller
 
         return View(list);
     }
-    // GET: LoanTickets/Create
-    public IActionResult Create()
+    // Đọc giả: Sách đang mượn
+    public async Task<IActionResult> Borrowed()
     {
-        ViewBag.Books = new Microsoft.AspNetCore.Mvc.Rendering.SelectList(_context.Books, "Id", "Title");
-        return View();
-    }
+        var list = await _context.LoanTickets
+            .Include(lt => lt.LoanDetails)
+                .ThenInclude(ld => ld.Book)
+            .Where(lt => lt.Status == "Borrowed")
+            .OrderByDescending(lt => lt.BorrowDate)
+            .ToListAsync();
 
+        return View(list);
+    }
+    // Đọc giả: Lịch sử mượn
+    public async Task<IActionResult> History()
+    {
+        var list = await _context.LoanTickets
+            .Include(lt => lt.LoanDetails)
+                .ThenInclude(ld => ld.Book)
+            .Where(lt => lt.Status != "Borrowed")
+            .OrderByDescending(lt => lt.BorrowDate)
+            .ToListAsync();
+
+        return View(list);
+    }
+    // GET: LoanTickets/Create
+
+    [RoleAuthorize("Reader")]
+    [HttpGet]
+    public async Task<IActionResult> Create()
+    {
+        ViewBag.Books = await _context.Books
+            .Where(b => b.AvailableQuantity > 0)
+            .OrderBy(b => b.Title)
+            .ToListAsync();
+
+        var model = new CreateLoanTicketViewModel();
+
+        // Ban đầu có 1 dòng sách
+        model.Details.Add(
+            new CreateLoanDetailViewModel
+            {
+                Quantity = 1
+            }
+        );
+
+        return View(model);
+    }
     // YÊU CẦU 2: Xử lý giao dịch tạo phiếu mượn (Transaction, Rollback, Validation)
+    [RoleAuthorize("Reader")]
     [HttpPost]
     [ValidateAntiForgeryToken]
-    public async Task<IActionResult> Create(CreateLoanTicketViewModel model)
+    public async Task<IActionResult> Create(
+        CreateLoanTicketViewModel model)
     {
+        // Kiểm tra có ít nhất 1 sách
+        if (model.Details == null ||
+            model.Details.Count == 0)
+        {
+            ModelState.AddModelError(
+                "Details",
+                "Vui lòng thêm ít nhất một sách."
+            );
+        }
+
+
+        // Kiểm tra không được chọn trùng cùng một sách
+        if (model.Details != null &&
+            model.Details.Count > 0)
+        {
+            var duplicateBooks = model.Details
+                .GroupBy(d => d.BookId)
+                .Where(g => g.Count() > 1)
+                .ToList();
+
+            if (duplicateBooks.Any())
+            {
+                ModelState.AddModelError(
+                    "Details",
+                    "Không được chọn trùng cùng một sách."
+                );
+            }
+        }
+
+
         if (!ModelState.IsValid)
         {
-            ViewBag.Books = new Microsoft.AspNetCore.Mvc.Rendering.SelectList(_context.Books, "Id", "Title");
+            ViewBag.Books = await _context.Books
+                .Where(b => b.AvailableQuantity > 0)
+                .OrderBy(b => b.Title)
+                .ToListAsync();
+
             return View(model);
         }
 
-        // Sử dụng EF Core Transaction
-        using (var transaction = await _context.Database.BeginTransactionAsync())
+
+        // =========================================
+        // TRANSACTION
+        // =========================================
+
+        using var transaction =
+            await _context.Database.BeginTransactionAsync();
+
+        try
         {
-            try
+            // =====================================
+            // 1. KIỂM TRA TẤT CẢ SÁCH
+            // =====================================
+
+            var bookIds = model.Details
+                .Select(d => d.BookId)
+                .ToList();
+
+            var books = await _context.Books
+                .Where(b => bookIds.Contains(b.Id))
+                .ToListAsync();
+
+
+            // Có sách không tồn tại
+            if (books.Count != bookIds.Count)
             {
-                var book = await _context.Books.FindAsync(model.BookId);
+                ModelState.AddModelError(
+                    "Details",
+                    "Có sách không tồn tại trong hệ thống."
+                );
 
-                if (book == null)
+                await transaction.RollbackAsync();
+
+                ViewBag.Books = await _context.Books
+                    .Where(b => b.AvailableQuantity > 0)
+                    .OrderBy(b => b.Title)
+                    .ToListAsync();
+
+                return View(model);
+            }
+
+
+            // =====================================
+            // 2. KIỂM TRA TỒN KHO
+            // =====================================
+
+            foreach (var detail in model.Details)
+            {
+                var book = books.First(
+                    b => b.Id == detail.BookId
+                );
+
+                if (detail.Quantity <= 0)
                 {
-                    ModelState.AddModelError("", "Sách chọn không tồn tại trong hệ thống.");
-                    ViewBag.Books = new Microsoft.AspNetCore.Mvc.Rendering.SelectList(_context.Books, "Id", "Title");
-                    return View(model);
+                    ModelState.AddModelError(
+                        "Details",
+                        $"Số lượng mượn của sách \"{book.Title}\" phải lớn hơn 0."
+                    );
                 }
 
-                // KIỂM TRA ĐIỀU KIỆN: Số lượng mượn vượt quá kho -> HỦY GIAO DỊCH
-                if (model.Quantity > book.AvailableQuantity)
+                if (detail.Quantity > book.AvailableQuantity)
                 {
-                    ModelState.AddModelError("", $"Số lượng sách trong kho không đủ! (Hiện còn: {book.AvailableQuantity})");
-                    ViewBag.Books = new Microsoft.AspNetCore.Mvc.Rendering.SelectList(_context.Books, "Id", "Title");
-
-                    // Rollback không thực hiện bất kỳ thay đổi nào
-                    await transaction.RollbackAsync();
-                    return View(model);
+                    ModelState.AddModelError(
+                        "Details",
+                        $"Sách \"{book.Title}\" không đủ số lượng. " +
+                        $"Hiện còn {book.AvailableQuantity} cuốn."
+                    );
                 }
+            }
 
-                // 1. Trừ số lượng sách trong kho
-                book.AvailableQuantity -= model.Quantity;
 
-                // 2. Tạo bản ghi LoanTickets mới (Mặc định status 'Borrowed')
-                var loanTicket = new LoanTicket
-                {
-                    BorrowerName = model.BorrowerName,
-                    BorrowDate = DateTime.Now,
-                    Status = "Borrowed"
-                };
-                _context.LoanTickets.Add(loanTicket);
-                await _context.SaveChangesAsync(); // Lấy được LoanTicket.Id vừa sinh
+            // Nếu có lỗi → Rollback
+            if (!ModelState.IsValid)
+            {
+                await transaction.RollbackAsync();
 
-                // 3. Tạo bản ghi LoanDetails tương ứng
+                ViewBag.Books = await _context.Books
+                    .Where(b => b.AvailableQuantity > 0)
+                    .OrderBy(b => b.Title)
+                    .ToListAsync();
+
+                return View(model);
+            }
+
+
+            // =====================================
+            // 3. TẠO LOAN TICKET
+            // =====================================
+
+            var loanTicket = new LoanTicket
+            {
+                BorrowerName = model.BorrowerName,
+                BorrowDate = DateTime.Now,
+                Status = "Borrowed"
+            };
+
+            _context.LoanTickets.Add(loanTicket);
+
+            await _context.SaveChangesAsync();
+
+
+            // =====================================
+            // 4. TẠO NHIỀU LOAN DETAILS
+            // =====================================
+
+            foreach (var detail in model.Details)
+            {
+                var book = books.First(
+                    b => b.Id == detail.BookId
+                );
+
+
+                // Trừ số lượng trong kho
+                book.AvailableQuantity -= detail.Quantity;
+
+
+                // Tạo chi tiết phiếu mượn
                 var loanDetail = new LoanDetail
                 {
                     LoanTicketId = loanTicket.Id,
-                    BookId = model.BookId,
-                    Quantity = model.Quantity
+                    BookId = detail.BookId,
+                    Quantity = detail.Quantity
                 };
+
                 _context.LoanDetails.Add(loanDetail);
-                await _context.SaveChangesAsync();
-
-                // COMMIT Transaction nếu tất cả thành công
-                await transaction.CommitAsync();
-
-                return RedirectToAction(nameof(Index));
             }
-            catch (Exception)
-            {
-                // Tự động Rollback nếu xảy ra lỗi ngoại lệ
-                await transaction.RollbackAsync();
-                ModelState.AddModelError("", "Đã xảy ra lỗi hệ thống trong quá trình thực hiện giao dịch.");
-            }
+
+
+            // Lưu tất cả thay đổi
+            await _context.SaveChangesAsync();
+
+
+            // =====================================
+            // 5. COMMIT
+            // =====================================
+
+            await transaction.CommitAsync();
+
+
+            return RedirectToAction(
+                nameof(Index)
+            );
+        }
+        catch (Exception)
+        {
+            // =====================================
+            // ROLLBACK NẾU CÓ LỖI
+            // =====================================
+
+            await transaction.RollbackAsync();
+
+            ModelState.AddModelError(
+                "",
+                "Đã xảy ra lỗi trong quá trình tạo phiếu mượn."
+            );
         }
 
-        ViewBag.Books = new Microsoft.AspNetCore.Mvc.Rendering.SelectList(_context.Books, "Id", "Title");
+
+        ViewBag.Books = await _context.Books
+            .Where(b => b.AvailableQuantity > 0)
+            .OrderBy(b => b.Title)
+            .ToListAsync();
+
         return View(model);
+    }
+    // =========================================
+    // ADMIN - DANH SÁCH SÁCH ĐANG MƯỢN
+    // =========================================
+
+    [RoleAuthorize("Admin")]
+    [HttpGet]
+    public async Task<IActionResult> Return()
+    {
+        var tickets = await _context.LoanTickets
+            .Where(x => x.Status == "Borrowed")
+            .Include(x => x.LoanDetails)
+                .ThenInclude(ld => ld.Book)
+            .OrderByDescending(x => x.BorrowDate)
+            .ToListAsync();
+
+        return View("Return", tickets);
+    }
+
+    // =========================================
+    // ADMIN - XÁC NHẬN TRẢ 1 CUỐN SÁCH
+    // =========================================
+
+    [RoleAuthorize("Admin")]
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> ConfirmReturn(
+        int loanTicketId,
+        int bookId)
+    {
+        using var transaction =
+            await _context.Database.BeginTransactionAsync();
+
+        try
+        {
+            // =====================================
+            // 1. LẤY CHI TIẾT PHIẾU MƯỢN
+            // =====================================
+
+            var loanDetail = await _context.LoanDetails
+                .Include(ld => ld.Book)
+                .Include(ld => ld.LoanTicket)
+                .FirstOrDefaultAsync(ld =>
+                    ld.LoanTicketId == loanTicketId &&
+                    ld.BookId == bookId);
+
+            if (loanDetail == null)
+            {
+                return NotFound();
+            }
+
+
+            // =====================================
+            // 2. KIỂM TRA ĐÃ TRẢ HẾT CHƯA
+            // =====================================
+
+            if (loanDetail.ReturnedQuantity >= loanDetail.Quantity)
+            {
+                TempData["Error"] =
+                    "Sách này đã được trả đủ.";
+
+                return RedirectToAction(
+                    nameof(Return));
+            }
+
+
+            // =====================================
+            // 3. LẤY SÁCH
+            // =====================================
+
+            var book = await _context.Books
+                .FirstOrDefaultAsync(
+                    b => b.Id == bookId);
+
+            if (book == null)
+            {
+                return NotFound();
+            }
+
+
+            // =====================================
+            // 4. TRẢ 1 CUỐN
+            // =====================================
+
+            loanDetail.ReturnedQuantity += 1;
+
+            book.AvailableQuantity += 1;
+
+
+            // =====================================
+            // 5. KIỂM TRA PHIẾU ĐÃ TRẢ HẾT CHƯA
+            // =====================================
+
+            var loanDetails =
+                await _context.LoanDetails
+                    .Where(ld =>
+                        ld.LoanTicketId == loanTicketId)
+                    .ToListAsync();
+
+
+            bool allReturned =
+                loanDetails.All(ld =>
+                    ld.ReturnedQuantity >= ld.Quantity);
+
+
+            if (allReturned)
+            {
+                loanDetail.LoanTicket.Status =
+                    "Returned";
+            }
+            else
+            {
+                loanDetail.LoanTicket.Status =
+                    "Borrowed";
+            }
+
+
+            // =====================================
+            // 6. LƯU
+            // =====================================
+
+            await _context.SaveChangesAsync();
+
+
+            // =====================================
+            // 7. COMMIT
+            // =====================================
+
+            await transaction.CommitAsync();
+
+
+            TempData["Success"] =
+                $"Đã trả 1 cuốn \"{book.Title}\" thành công.";
+
+
+            return RedirectToAction(
+                nameof(Return));
+        }
+        catch
+        {
+            await transaction.RollbackAsync();
+
+            TempData["Error"] =
+                "Có lỗi xảy ra khi trả sách.";
+
+            return RedirectToAction(
+                nameof(Return));
+        }
     }
 }

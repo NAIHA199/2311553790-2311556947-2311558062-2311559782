@@ -11,6 +11,9 @@ public partial class LoanDetail
 
     public int Quantity { get; set; }
 
+    // Số lượng sách đã trả
+    public int ReturnedQuantity { get; set; } = 0;
+
     public virtual Book Book { get; set; } = null!;
 
     public virtual LoanTicket LoanTicket { get; set; } = null!;

@@ -1,10 +1,258 @@
 ﻿@{
-    ViewData["Title"] = "Home Page";
+    ViewData["Title"] = "Trang chủ";
 }
 
-<div class="text-center">
-    <h1 class="display-4">Welcome</h1>
-    <p>Learn about <a href="https://learn.microsoft.com/aspnet/core">building Web apps with ASP.NET Core</a>.</p>
-    <hr class="my-4">
-    <a class="btn btn-primary btn-lg" asp-area="" asp-controller="Statistics" asp-action="Index" role="button">📊 View Statistics</a>
+<div class="home-page">
+
+    <!-- WELCOME -->
+    <div class="home-welcome">
+
+        <div>
+            <span class="welcome-label">
+                THƯ VIỆN TRỰC TUYẾN
+            </span>
+
+            <h1>
+                Chào mừng bạn đến với thư viện 📚
+            </h1>
+
+            <p>
+                Khám phá những cuốn sách hay và quản lý
+                sách bạn đang mượn một cách dễ dàng.
+            </p>
+
+            <a asp-controller="Books"
+               asp-action="Index"
+               class="home-button">
+                Xem sách →
+            </a>
+        </div>
+
+        <div class="welcome-icon">
+            📚
+        </div>
+
+    </div>
+
+
+    <!-- QUICK INFO -->
+    <div class="home-stats">
+
+        <div class="home-stat">
+
+            <div class="stat-icon">
+                📚
+            </div>
+
+            <div>
+                <span>Tổng số sách</span>
+                <strong>--</strong>
+            </div>
+
+        </div>
+
+
+        <div class="home-stat">
+
+            <div class="stat-icon">
+                📖
+            </div>
+
+            <div>
+                <span>Sách đang mượn</span>
+                <strong>--</strong>
+            </div>
+
+        </div>
+
+
+        <div class="home-stat">
+
+            <div class="stat-icon">
+                📋
+            </div>
+
+            <div>
+                <span>Lịch sử mượn</span>
+                <strong>--</strong>
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <!-- FEATURED BOOKS -->
+    <div class="home-section">
+
+        <div class="section-header">
+
+            <div>
+                <span class="section-label">
+                    KHÁM PHÁ
+                </span>
+
+                <h2>
+                    Sách nổi bật
+                </h2>
+            </div>
+
+            <a asp-controller="Books"
+               asp-action="Index"
+               class="view-all">
+                Xem tất cả →
+            </a>
+
+        </div>
+
+
+        <div class="simple-book-grid">
+
+            <div class="simple-book-card">
+
+                <div class="book-image">
+                    📕
+                </div>
+
+                <div class="book-info">
+
+                    <h3>
+                        Sách mẫu
+                    </h3>
+
+                    <p>
+                        Tác giả
+                    </p>
+
+                </div>
+
+            </div>
+
+
+            <div class="simple-book-card">
+
+                <div class="book-image">
+                    📘
+                </div>
+
+                <div class="book-info">
+
+                    <h3>
+                        Sách mẫu
+                    </h3>
+
+                    <p>
+                        Tác giả
+                    </p>
+
+                </div>
+
+            </div>
+
+
+            <div class="simple-book-card">
+
+                <div class="book-image">
+                    📗
+                </div>
+
+                <div class="book-info">
+
+                    <h3>
+                        Sách mẫu
+                    </h3>
+
+                    <p>
+                        Tác giả
+                    </p>
+
+                </div>
+
+            </div>
+
+
+            <div class="simple-book-card">
+
+                <div class="book-image">
+                    📙
+                </div>
+
+                <div class="book-info">
+
+                    <h3>
+                        Sách mẫu
+                    </h3>
+
+                    <p>
+                        Tác giả
+                    </p>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <!-- CATEGORY -->
+    <div class="home-section">
+
+        <div class="section-header">
+
+            <div>
+                <span class="section-label">
+                    DANH MỤC
+                </span>
+
+                <h2>
+                    Khám phá theo thể loại
+                </h2>
+            </div>
+
+        </div>
+
+
+        <div class="category-list">
+
+            <a href="#" class="category-item">
+                <span>💻</span>
+                <div>
+                    <strong>Công nghệ thông tin</strong>
+                    <small>Sách CNTT</small>
+                </div>
+            </a>
+
+
+            <a href="#" class="category-item">
+                <span>🧠</span>
+                <div>
+                    <strong>Kỹ năng sống</strong>
+                    <small>Sách kỹ năng</small>
+                </div>
+            </a>
+
+
+            <a href="#" class="category-item">
+                <span>💼</span>
+                <div>
+                    <strong>Kinh tế</strong>
+                    <small>Sách kinh tế</small>
+                </div>
+            </a>
+
+
+            <a href="#" class="category-item">
+                <span>📖</span>
+                <div>
+                    <strong>Tiểu thuyết</strong>
+                    <small>Sách tiểu thuyết</small>
+                </div>
+            </a>
+
+        </div>
+
+    </div>
+
 </div>

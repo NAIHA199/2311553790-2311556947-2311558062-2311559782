@@ -1,0 +1,77 @@
+﻿@model LibraryAdvanced.Models.Book
+
+@{
+    ViewData["Title"] = "Xóa sách";
+}
+
+<div class="admin-book-page">
+
+    <div class="admin-book-header">
+
+        <span>
+            QUẢN TRỊ
+        </span>
+
+        <h1>
+            Xóa sách
+        </h1>
+
+        <p>
+            Xác nhận xóa sách khỏi thư viện.
+        </p>
+
+    </div>
+
+
+    <div class="admin-delete-card">
+
+        <div class="delete-icon">
+            🗑️
+        </div>
+
+        <h2>
+            Bạn có chắc muốn xóa sách này?
+        </h2>
+
+        <h3>
+            @Model.Title
+        </h3>
+
+        <p>
+            Tác giả: @Model.Author
+        </p>
+
+
+        <form asp-action="DeleteConfirmed"
+              method="post">
+
+            @Html.AntiForgeryToken()
+
+            <input type="hidden"
+                   name="id"
+                   value="@Model.Id" />
+
+
+            <div class="admin-form-actions">
+
+                <a asp-action="Index"
+                   class="admin-cancel">
+
+                    Hủy
+
+                </a>
+
+                <button type="submit"
+                        class="admin-delete">
+
+                    Xóa sách
+
+                </button>
+
+            </div>
+
+        </form>
+
+    </div>
+
+</div>

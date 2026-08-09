@@ -1,52 +1,246 @@
 @model IEnumerable<LibraryAdvanced.ViewModels.LoanTicketListViewModel>
 
-<h2>Danh Sách Phiếu Mượn</h2>
+@using Microsoft.AspNetCore.Http
 
-<p>
-    <a asp-action="Create" class="btn btn-primary">Tạo Phiếu Mượn Mới</a>
-</p>
+@{
+    ViewData["Title"] = "Danh Sách Phiếu Mượn";
 
-<!-- Form Tìm kiếm & Lọc -->
-<form method="get" asp-action="Index" class="row g-3 mb-4">
-    <div class="col-md-4">
-        <input type="text" name="searchString" value="@ViewBag.SearchString" class="form-control" placeholder="Tìm theo tên người mượn..." />
-    </div>
-    <div class="col-md-3">
-        <select name="statusFilter" class="form-select">
-            <option value="All" selected="@(ViewBag.StatusFilter == "All" ? "selected" : null)">-- Tất cả trạng thái --</option>
-            <option value="Borrowed" selected="@(ViewBag.StatusFilter == "Borrowed" ? "selected" : null)">Borrowed (Đang mượn)</option>
-            <option value="Returned" selected="@(ViewBag.StatusFilter == "Returned" ? "selected" : null)">Returned (Đã trả)</option>
-        </select>
-    </div>
-    <div class="col-md-2">
-        <button type="submit" class="btn btn-secondary">Tìm kiếm</button>
-    </div>
-</form>
+    var role = Context.Session.GetString("Role");
+}
 
-<table class="table table-bordered table-striped">
-    <thead>
-        <tr>
-            <th>Mã Phiếu</th>
-            <th>Tên Người Mượn</th>
-            <th>Ngày Mượn</th>
-            <th>Trạng Thái</th>
-            <th>Tổng Số Lượng Sách</th>
-        </tr>
-    </thead>
-    <tbody>
-        @foreach (var item in Model)
+
+<div class="container-fluid">
+
+    <!-- HEADER -->
+
+    <div class="d-flex justify-content-between align-items-center mb-4">
+
+        <h2>
+            Danh Sách Phiếu Mượn
+        </h2>
+
+
+        <!-- ADMIN: TẠO PHIẾU TRẢ -->
+        @if (role == "Admin")
         {
-            <tr>
-                <td>@item.Id</td>
-                <td>@item.BorrowerName</td>
-                <td>@item.BorrowDate?.ToString("dd/MM/yyyy HH:mm")</td>
-                <td>
-                    <span class="badge @(item.Status == "Borrowed" ? "bg-warning text-dark" : "bg-success")">
-                        @item.Status
-                    </span>
-                </td>
-                <td>@item.TotalQuantity</td>
-            </tr>
+            <a asp-controller="LoanTickets"
+               asp-action="Return"
+               class="btn btn-success">
+
+                ↩ Tạo Phiếu Trả Sách
+
+            </a>
         }
-    </tbody>
-</table>
+
+    </div>
+
+
+
+    <!-- FORM TÌM KIẾM + LỌC -->
+
+    <form method="get"
+          asp-controller="LoanTickets"
+          asp-action="Index"
+          class="row g-3 mb-4">
+
+        <!-- TÌM KIẾM -->
+
+        <div class="col-md-4">
+
+            <input type="text"
+                   name="searchString"
+                   value="@ViewBag.SearchString"
+                   class="form-control"
+                   placeholder="Tìm theo tên người mượn..." />
+
+        </div>
+
+
+        <!-- TRẠNG THÁI -->
+
+        <div class="col-md-3">
+
+            <select name="statusFilter"
+                    class="form-select">
+
+                <option value="All"
+                        selected="@(ViewBag.StatusFilter == "All" ? "selected" : null)">
+
+                    -- Tất cả trạng thái --
+
+                </option>
+
+
+                <option value="Borrowed"
+                        selected="@(ViewBag.StatusFilter == "Borrowed" ? "selected" : null)">
+
+                    Borrowed (Đang mượn)
+
+                </option>
+
+
+                <option value="Returned"
+                        selected="@(ViewBag.StatusFilter == "Returned" ? "selected" : null)">
+
+                    Returned (Đã trả)
+
+                </option>
+
+            </select>
+
+        </div>
+
+
+        <!-- BUTTON -->
+
+        <div class="col-md-2">
+
+            <button type="submit"
+                    class="btn btn-secondary">
+
+                Tìm kiếm
+
+            </button>
+
+        </div>
+
+    </form>
+
+
+
+    <!-- THÔNG BÁO -->
+    @if (TempData["Success"] != null)
+    {
+        <div class="alert alert-success">
+
+            @TempData["Success"]
+
+        </div>
+    }
+
+
+    @if (TempData["Error"] != null)
+    {
+        <div class="alert alert-danger">
+
+            @TempData["Error"]
+
+        </div>
+    }
+
+
+
+    <!-- TABLE -->
+
+    <div class="table-responsive">
+
+        <table class="table table-bordered table-striped">
+
+            <thead>
+
+                <tr>
+
+                    <th>
+                        Mã Phiếu
+                    </th>
+
+                    <th>
+                        Tên Người Mượn
+                    </th>
+
+                    <th>
+                        Ngày Mượn
+                    </th>
+
+                    <th>
+                        Trạng Thái
+                    </th>
+
+                    <th>
+                        Tổng Số Lượng Sách
+                    </th>
+
+                </tr>
+
+            </thead>
+
+
+            <tbody>
+
+                @if (Model.Any())
+                {
+                    @foreach (var item in Model)
+                    {
+                        <tr>
+
+                            <!-- MÃ PHIẾU -->
+
+                            <td>
+                                @item.Id
+                            </td>
+
+
+                            <!-- NGƯỜI MƯỢN -->
+
+                            <td>
+                                @item.BorrowerName
+                            </td>
+
+
+                            <!-- NGÀY MƯỢN -->
+
+                            <td>
+                                @item.BorrowDate?.ToString("dd/MM/yyyy HH:mm")
+                            </td>
+
+
+                            <!-- TRẠNG THÁI -->
+
+                            <td>
+
+                                @if (item.Status == "Borrowed")
+                                {
+                                    <span class="badge bg-warning text-dark">
+                                        Borrowed
+                                    </span>
+                                }
+                                else
+                                {
+                                    <span class="badge bg-success">
+                                        Returned
+                                    </span>
+                                }
+
+                            </td>
+
+
+                            <!-- TỔNG SỐ LƯỢNG -->
+
+                            <td>
+                                @item.TotalQuantity
+                            </td>
+
+                        </tr>
+                    }
+                }
+                else
+                {
+                    <tr>
+
+                        <td colspan="5"
+                            class="text-center py-4">
+
+                            Không tìm thấy phiếu mượn.
+
+                        </td>
+
+                    </tr>
+                }
+
+            </tbody>
+
+        </table>
+
+    </div>
+
+</div>

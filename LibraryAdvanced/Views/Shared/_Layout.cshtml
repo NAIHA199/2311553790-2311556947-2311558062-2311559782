@@ -1,53 +1,452 @@
-﻿<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>@ViewData["Title"] - LibraryAdvanced</title>
-    <script type="importmap"></script>
-    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
-    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
-    <link rel="stylesheet" href="~/LibraryAdvanced.styles.css" asp-append-version="true" />
-</head>
-<body>
-    <header>
-        <nav class="navbar navbar-expand-sm navbar-toggleable-sm navbar-light bg-white border-bottom box-shadow mb-3">
-            <div class="container-fluid">
-                <a class="navbar-brand" asp-area="" asp-controller="Home" asp-action="Index">LibraryAdvanced</a>
-                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target=".navbar-collapse" aria-controls="navbarSupportedContent"
-                        aria-expanded="false" aria-label="Toggle navigation">
-                    <span class="navbar-toggler-icon"></span>
-                </button>
-                <div class="navbar-collapse collapse d-sm-inline-flex justify-content-between">
-                    <ul class="navbar-nav flex-grow-1">
-                        <li class="nav-item">
-                            <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Index">Home</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link text-dark" asp-area="" asp-controller="Statistics" asp-action="Index">Statistics</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Privacy">Privacy</a>
-                        </li>
-                    </ul>
-                </div>
-            </div>
-        </nav>
-    </header>
-    <div class="container">
-        <main role="main" class="pb-3">
-            @RenderBody()
-        </main>
-    </div>
+﻿@using Microsoft.AspNetCore.Http
 
-    <footer class="border-top footer text-muted">
-        <div class="container">
-            &copy; 2026 - LibraryAdvanced - <a asp-area="" asp-controller="Home" asp-action="Privacy">Privacy</a>
+<!DOCTYPE html>
+
+<html lang="vi">
+
+<head>
+
+    <meta charset="utf-8" />
+
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0" />
+
+    <title>
+        @ViewData["Title"] - LibraryAdvanced
+    </title>
+
+    <link rel="stylesheet"
+          href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+
+    <link rel="stylesheet"
+          href="~/css/site.css"
+          asp-append-version="true" />
+
+</head>
+
+
+<body>
+
+    @{
+        // =========================
+        // CURRENT PAGE
+        // =========================
+
+        var currentController =
+            ViewContext.RouteData.Values["Controller"]?.ToString();
+
+        var currentAction =
+            ViewContext.RouteData.Values["Action"]?.ToString();
+
+
+        // =========================
+        // LOGIN SESSION
+        // =========================
+
+        var role =
+            Context.Session.GetString("Role");
+
+        var displayName =
+            Context.Session.GetString("DisplayName")
+            ?? "Người dùng";
+
+
+        // =========================
+        // AVATAR
+        // =========================
+
+        var avatar =
+            !string.IsNullOrWhiteSpace(displayName)
+                ? displayName.Substring(0, 1).ToUpper()
+                : "U";
+    }
+
+
+    <!-- =========================================
+     SIDEBAR
+========================================= -->
+
+    <aside class="library-sidebar">
+
+
+        <!-- LOGO -->
+
+        <div class="sidebar-logo">
+
+            <div class="logo-book">
+                📚
+            </div>
+
+            <div class="logo-text">
+
+                <strong>
+                    LIBRARY
+                </strong>
+
+                <small>
+                    Library Management
+                </small>
+
+            </div>
+
         </div>
-    </footer>
+
+
+
+        <!-- =====================================
+         MENU
+    ====================================== -->
+
+        <nav class="sidebar-menu">
+
+
+            @if (role == "Admin")
+            {
+                <!-- ================================
+                 ADMIN MENU
+            ================================= -->
+
+                <div class="sidebar-title">
+                    QUẢN TRỊ
+                </div>
+
+
+                <!-- DASHBOARD -->
+
+                <a asp-controller="Home"
+                   asp-action="Index"
+                   class="sidebar-link @(currentController == "Home" ? "active" : "")">
+
+                    <span class="sidebar-icon">
+                        📊
+                    </span>
+
+                    <span>
+                        Dashboard
+                    </span>
+
+                </a>
+
+
+                <!-- BOOK MANAGEMENT -->
+
+                <a asp-controller="Books"
+                   asp-action="Index"
+                   class="sidebar-link @(currentController == "Books" ? "active" : "")">
+
+                    <span class="sidebar-icon">
+                        📚
+                    </span>
+
+                    <span>
+                        Quản lý sách
+                    </span>
+
+                </a>
+
+
+                <!-- BORROW MANAGEMENT -->
+
+                <a asp-controller="LoanTickets"
+                   asp-action="Index"
+                   class="sidebar-link @(currentController == "LoanTickets" && currentAction == "Index" ? "active" : "")">
+
+                    <span class="sidebar-icon">
+                        📋
+                    </span>
+
+                    <span>
+                        Quản lý mượn
+                    </span>
+
+                </a>
+
+
+                <!-- STATISTICS -->
+
+                <a asp-controller="Statistics"
+                   asp-action="Index"
+                   class="sidebar-link @(currentController == "Statistics" ? "active" : "")">
+
+                    <span class="sidebar-icon">
+                        📈
+                    </span>
+
+                    <span>
+                        Thống kê
+                    </span>
+
+                </a>
+            }
+
+
+            else if (role == "Reader")
+            {
+                <!-- ================================
+                 READER MENU
+            ================================= -->
+
+                <div class="sidebar-title">
+                    MENU
+                </div>
+
+
+                <!-- HOME -->
+
+                <a asp-controller="Home"
+                   asp-action="Index"
+                   class="sidebar-link @(currentController == "Home" && currentAction == "Index" ? "active" : "")">
+
+                    <span class="sidebar-icon">
+                        🏠
+                    </span>
+
+                    <span>
+                        Trang chủ
+                    </span>
+
+                </a>
+
+
+                <!-- BOOKS -->
+
+                <a asp-controller="Books"
+                   asp-action="Index"
+                   class="sidebar-link @(currentController == "Books" && currentAction == "Index" ? "active" : "")">
+
+                    <span class="sidebar-icon">
+                        📚
+                    </span>
+
+                    <span>
+                        Xem sách
+                    </span>
+
+                </a>
+
+
+                <!-- SEARCH -->
+
+                <a asp-controller="Books"
+                   asp-action="Index"
+                   class="sidebar-link">
+
+                    <span class="sidebar-icon">
+                        🔍
+                    </span>
+
+                    <span>
+                        Tìm kiếm
+                    </span>
+
+                </a>
+
+
+                <!-- LIBRARY -->
+
+                <div class="sidebar-title sidebar-section">
+
+                    THƯ VIỆN CỦA TÔI
+
+                </div>
+
+
+                <!-- CURRENT BORROW -->
+
+                <a asp-controller="LoanTickets"
+                   asp-action="Borrowed"
+                   class="sidebar-link @(currentController == "LoanTickets" && currentAction == "Borrowed" ? "active" : "")">
+
+                    <span class="sidebar-icon">
+                        📖
+                    </span>
+
+                    <span>
+                        Sách đang mượn
+                    </span>
+
+                </a>
+
+
+                <!-- HISTORY -->
+
+                <a asp-controller="LoanTickets"
+                   asp-action="History"
+                   class="sidebar-link @(currentController == "LoanTickets" && currentAction == "History" ? "active" : "")">
+
+                    <span class="sidebar-icon">
+                        📋
+                    </span>
+
+                    <span>
+                        Lịch sử mượn
+                    </span>
+
+                </a>
+            }
+
+
+        </nav>
+
+
+
+        <!-- USER INFO / PROFILE -->
+
+        <a asp-controller="Account"
+           asp-action="Profile"
+           class="sidebar-user profile-link">
+
+            <div class="user-avatar">
+
+                @avatar
+
+            </div>
+
+            <div class="user-info">
+
+                <strong>
+                    @displayName
+                </strong>
+
+                <small>
+                    @(role == "Admin"
+                        ? "Quản trị viên"
+                        : "Độc giả")
+                </small>
+
+            </div>
+
+        </a>
+            <!-- LOGOUT -->
+
+            <a asp-controller="Account"
+               asp-action="Logout"
+               class="logout-link">
+
+                🚪 Đăng xuất
+
+            </a>
+
+
+        </div>
+
+
+    </aside>
+
+
+
+    <!-- =========================================
+     MAIN CONTENT
+========================================= -->
+
+    <main class="library-main">
+
+
+        <!-- TOPBAR -->
+
+        <header class="library-topbar">
+
+
+            <div class="page-title">
+
+                @if (ViewData["Title"] != null)
+                {
+                    <h5>
+                        @ViewData["Title"]
+                    </h5>
+                }
+
+            </div>
+
+
+
+            <!-- TOPBAR USER -->
+
+            <div class="topbar-user">
+
+
+                <div class="topbar-avatar">
+
+                    @avatar
+
+                </div>
+
+
+                <div>
+
+                    <strong>
+
+                        @displayName
+
+                    </strong>
+
+
+                    <small>
+
+                        @(role == "Admin"
+                            ? "Quản trị viên"
+                            : "Độc giả")
+
+                    </small>
+
+                </div>
+
+
+            </div>
+
+
+        </header>
+
+
+
+        <!-- =========================================
+         PAGE CONTENT
+    ========================================== -->
+
+        <div class="library-content">
+
+            @RenderBody()
+
+        </div>
+
+
+
+        <!-- =========================================
+         FOOTER
+    ========================================== -->
+
+        <footer class="library-footer">
+
+            <span>
+
+                © 2026 - LibraryAdvanced
+
+            </span>
+
+        </footer>
+
+
+    </main>
+
+
+
+    <!-- =========================================
+     JS
+========================================= -->
+
     <script src="~/lib/jquery/dist/jquery.min.js"></script>
+
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="~/js/site.js" asp-append-version="true"></script>
-    @await RenderSectionAsync("Scripts", required: false)
+
+    <script src="~/js/site.js"
+            asp-append-version="true">
+    </script>
+
+    @await RenderSectionAsync(
+        "Scripts",
+        required: false
+    )
+
 </body>
+
 </html>
