@@ -1,0 +1,185 @@
+﻿@model LibraryAdvanced.ViewModels.RegisterViewModel
+
+@{
+    ViewData["Title"] = "Đăng ký";
+}
+
+<div class="auth-container">
+
+    <div class="auth-card">
+
+        <div class="auth-header">
+
+            <div class="auth-icon">
+                📚
+            </div>
+
+            <h2>Tạo tài khoản</h2>
+
+            <p>
+                Đăng ký tài khoản Reader để sử dụng thư viện
+            </p>
+
+        </div>
+
+
+        <form asp-action="Register"
+              asp-controller="Account"
+              method="post">
+
+            @Html.AntiForgeryToken()
+
+            <div asp-validation-summary="ModelOnly"
+                 class="text-danger mb-3">
+            </div>
+
+
+            <!-- HỌ TÊN -->
+
+            <div class="form-group">
+
+                <label asp-for="DisplayName">
+                    Họ và tên
+                </label>
+
+                <input asp-for="DisplayName"
+                       class="form-control"
+                       placeholder="Nhập họ và tên" />
+
+                <span asp-validation-for="DisplayName"
+                      class="text-danger">
+                </span>
+
+            </div>
+
+
+            <!-- USERNAME -->
+
+            <div class="form-group">
+
+                <label asp-for="Username">
+                    Tên đăng nhập
+                </label>
+
+                <input asp-for="Username"
+                       class="form-control"
+                       placeholder="Nhập tên đăng nhập" />
+
+                <span asp-validation-for="Username"
+                      class="text-danger">
+                </span>
+
+            </div>
+
+
+            <!-- EMAIL -->
+
+            <div class="form-group">
+
+                <label asp-for="Email">
+                    Email
+                </label>
+
+                <input asp-for="Email"
+                       class="form-control"
+                       placeholder="example@gmail.com" />
+
+                <span asp-validation-for="Email"
+                      class="text-danger">
+                </span>
+
+            </div>
+
+
+            <!-- PASSWORD -->
+
+            <div class="form-group">
+
+                <label asp-for="Password">
+                    Mật khẩu
+                </label>
+
+                <input asp-for="Password"
+                       class="form-control"
+                       placeholder="Ít nhất 6 ký tự" />
+
+                <span asp-validation-for="Password"
+                      class="text-danger">
+                </span>
+
+            </div>
+
+
+            <!-- CONFIRM PASSWORD -->
+
+            <div class="form-group">
+
+                <label asp-for="ConfirmPassword">
+                    Xác nhận mật khẩu
+                </label>
+
+                <input asp-for="ConfirmPassword"
+                       class="form-control"
+                       placeholder="Nhập lại mật khẩu" />
+
+                <span asp-validation-for="ConfirmPassword"
+                      class="text-danger">
+                </span>
+
+            </div>
+
+
+            <!-- ROLE -->
+
+            <div class="reader-role">
+
+                <span>👤</span>
+
+                <div>
+                    <strong>Vai trò: Độc giả</strong>
+
+                    <small>
+                        Tài khoản đăng ký mới mặc định là Reader
+                    </small>
+                </div>
+
+            </div>
+
+
+            <button type="submit"
+                    class="btn-register">
+
+                Đăng ký
+
+            </button>
+
+
+            <div class="login-link">
+
+                Đã có tài khoản?
+
+                <a asp-controller="Account"
+                   asp-action="Login">
+
+                    Đăng nhập
+
+                </a>
+
+            </div>
+
+        </form>
+
+    </div>
+
+</div>
+
+
+@section Scripts {
+
+    @{
+        await Html.RenderPartialAsync(
+            "_ValidationScriptsPartial"
+        );
+    }
+
+}

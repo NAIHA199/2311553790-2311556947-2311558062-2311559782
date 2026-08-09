@@ -1,11 +1,23 @@
-﻿using LibraryAdvanced.ViewModels;
+﻿using LibraryAdvanced.Models;
+using LibraryAdvanced.ViewModels;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 
 namespace LibraryAdvanced.Controllers
 {
     public class AccountController : Controller
     {
-        // GET: /Account/Login
+        private readonly LibraryAdvancedDbContext _context;
+
+        public AccountController(LibraryAdvancedDbContext context)
+        {
+            _context = context;
+        }
+
+        // =========================================
+        // LOGIN - GET
+        // =========================================
+
         [HttpGet]
         public IActionResult Login()
         {
@@ -13,17 +25,23 @@ namespace LibraryAdvanced.Controllers
         }
 
 
-        // POST: /Account/Login
+        // =========================================
+        // LOGIN - POST
+        // =========================================
+
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public IActionResult Login(LoginViewModel model)
+        public async Task<IActionResult> Login(LoginViewModel model)
         {
             if (!ModelState.IsValid)
             {
                 return View(model);
             }
 
-            // ADMIN
+            // =====================================
+            // ADMIN DEMO
+            // =====================================
+
             if (model.Username == "admin" &&
                 model.Password == "123456")
             {
@@ -49,23 +67,35 @@ namespace LibraryAdvanced.Controllers
             }
 
 
-            // READER
-            if (model.Username == "reader" &&
-                model.Password == "123456")
+            // =====================================
+            // LOGIN USER TRONG DATABASE
+            // =====================================
+
+            var user = await _context.Users
+                .Include(u => u.Role)
+                .FirstOrDefaultAsync(u =>
+                    u.Username == model.Username &&
+                    u.Password == model.Password &&
+                    u.IsActive == true
+                );
+
+
+            if (user != null)
             {
                 HttpContext.Session.SetString(
                     "Username",
-                    "reader"
+                    user.Username
                 );
 
                 HttpContext.Session.SetString(
                     "DisplayName",
-                    "Nguyễn Văn A"
+                    user.DisplayName
                 );
 
+                // Role lấy từ DB
                 HttpContext.Session.SetString(
                     "Role",
-                    "Reader"
+                    user.Role?.Name ?? "Reader"
                 );
 
                 return RedirectToAction(
@@ -75,7 +105,9 @@ namespace LibraryAdvanced.Controllers
             }
 
 
-            // ĐĂNG NHẬP SAI
+            // =====================================
+            // LOGIN SAI
+            // =====================================
 
             ModelState.AddModelError(
                 "",
@@ -84,16 +116,155 @@ namespace LibraryAdvanced.Controllers
 
             return View(model);
         }
-        // Đăng xuất 
+
+
+        // =========================================
+        // REGISTER - GET
+        // =========================================
+
+        [HttpGet]
+        public IActionResult Register()
+        {
+            return View();
+        }
+
+
+        // =========================================
+        // REGISTER - POST
+        // =========================================
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Register(
+            RegisterViewModel model)
+        {
+            if (!ModelState.IsValid)
+            {
+                return View(model);
+            }
+
+
+            // =====================================
+            // KIỂM TRA USERNAME ĐÃ TỒN TẠI
+            // =====================================
+
+            var usernameExists =
+                await _context.Users
+                    .AnyAsync(u =>
+                        u.Username == model.Username);
+
+            if (usernameExists)
+            {
+                ModelState.AddModelError(
+                    "Username",
+                    "Tên đăng nhập đã tồn tại."
+                );
+
+                return View(model);
+            }
+
+
+            // =====================================
+            // KIỂM TRA EMAIL
+            // =====================================
+
+            if (!string.IsNullOrWhiteSpace(model.Email))
+            {
+                var emailExists =
+                    await _context.Users
+                        .AnyAsync(u =>
+                            u.Email == model.Email);
+
+                if (emailExists)
+                {
+                    ModelState.AddModelError(
+                        "Email",
+                        "Email này đã được sử dụng."
+                    );
+
+                    return View(model);
+                }
+            }
+
+
+            // =====================================
+            // LẤY ROLE READER
+            // =====================================
+            //
+            // DB của project hiện tại:
+            // Admin = 1
+            // Reader = 2
+            //
+            // QUAN TRỌNG:
+            // Người dùng KHÔNG được truyền RoleId
+            // từ form đăng ký.
+            // =====================================
+
+            const int readerRoleId = 2;
+
+
+            // =====================================
+            // TẠO USER
+            // =====================================
+
+            var user = new User
+            {
+                Username = model.Username.Trim(),
+
+                Password = model.Password,
+
+                DisplayName = model.DisplayName.Trim(),
+
+                Email = string.IsNullOrWhiteSpace(model.Email)
+                    ? null
+                    : model.Email.Trim(),
+
+                // LUÔN LUÔN LÀ READER
+                RoleId = readerRoleId,
+
+                IsActive = true,
+
+                CreatedAt = DateTime.Now,
+
+                UpdatedAt = null
+            };
+
+
+            _context.Users.Add(user);
+
+            await _context.SaveChangesAsync();
+
+
+            // =====================================
+            // ĐĂNG KÝ THÀNH CÔNG
+            // =====================================
+
+            TempData["SuccessMessage"] =
+                "Đăng ký tài khoản thành công! " +
+                "Vui lòng đăng nhập.";
+
+            return RedirectToAction("Login");
+        }
+
+
+        // =========================================
+        // LOGOUT
+        // =========================================
 
         [HttpGet]
         public IActionResult Logout()
         {
-            return RedirectToAction("Login", "Account");
+            HttpContext.Session.Clear();
+
+            return RedirectToAction(
+                "Login",
+                "Account"
+            );
         }
-    
+
+
         // =========================================
-        // HỒ SƠ
+        // PROFILE
         // =========================================
 
         public IActionResult Profile()

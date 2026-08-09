@@ -66,6 +66,8 @@
      SIDEBAR
 ========================================= -->
 
+    @if (!string.IsNullOrEmpty(role))
+    {
     <aside class="library-sidebar">
 
 
@@ -317,21 +319,19 @@
             </div>
 
         </a>
-            <!-- LOGOUT -->
+        <!-- LOGOUT -->
 
-            <a asp-controller="Account"
-               asp-action="Logout"
-               class="logout-link">
+        <a asp-controller="Account"
+           asp-action="Logout"
+           class="logout-link">
 
-                🚪 Đăng xuất
+            🚪 Đăng xuất
 
-            </a>
-
-
-        </div>
+        </a>
 
 
     </aside>
+    }
 
 
 

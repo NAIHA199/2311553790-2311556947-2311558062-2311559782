@@ -1,5 +1,7 @@
 ﻿@{
     ViewData["Title"] = "Trang chủ";
+    var userRole = ViewBag.UserRole as string;
+    var displayName = ViewBag.DisplayName as string;
 }
 
 <div class="home-page">
@@ -8,18 +10,36 @@
     <div class="home-welcome">
 
         <div>
-            <span class="welcome-label">
-                THƯ VIỆN TRỰC TUYẾN
-            </span>
+            @if (userRole == "Reader")
+            {
+                <span class="welcome-label">
+                    CỬ NHÂN ĐỌC GIẢ
+                </span>
 
-            <h1>
-                Chào mừng bạn đến với thư viện 📚
-            </h1>
+                <h1>
+                    Xin chào, @displayName 👋
+                </h1>
 
-            <p>
-                Khám phá những cuốn sách hay và quản lý
-                sách bạn đang mượn một cách dễ dàng.
-            </p>
+                <p>
+                    Quản lý sách đang mượn và khám phá những cuốn sách
+                    hay trong thư viện.
+                </p>
+            }
+            else
+            {
+                <span class="welcome-label">
+                    QUẢN TRỊ VIÊN
+                </span>
+
+                <h1>
+                    Chào mừng bạn đến với Dashboard 📊
+                </h1>
+
+                <p>
+                    Quản lý hệ thống thư viện, theo dõi các phiếu mượn
+                    và xem thống kê chi tiết.
+                </p>
+            }
 
             <a asp-controller="Books"
                asp-action="Index"
@@ -29,7 +49,14 @@
         </div>
 
         <div class="welcome-icon">
-            📚
+            @if (userRole == "Reader")
+            {
+                <span>👤</span>
+            }
+            else
+            {
+                <span>👑</span>
+            }
         </div>
 
     </div>
@@ -46,7 +73,7 @@
 
             <div>
                 <span>Tổng số sách</span>
-                <strong>--</strong>
+                <strong>@ViewBag.TotalBooks</strong>
             </div>
 
         </div>
@@ -59,8 +86,17 @@
             </div>
 
             <div>
-                <span>Sách đang mượn</span>
-                <strong>--</strong>
+                <span>
+                    @if (userRole == "Reader")
+                    {
+                        <text>Sách đang mượn</text>
+                    }
+                    else
+                    {
+                        <text>Tổng sách đang mượn</text>
+                    }
+                </span>
+                <strong>@ViewBag.BorrowedBooks</strong>
             </div>
 
         </div>
@@ -73,8 +109,17 @@
             </div>
 
             <div>
-                <span>Lịch sử mượn</span>
-                <strong>--</strong>
+                <span>
+                    @if (userRole == "Reader")
+                    {
+                        <text>Lịch sử mượn</text>
+                    }
+                    else
+                    {
+                        <text>Tổng lượt mượn</text>
+                    }
+                </span>
+                <strong>@ViewBag.TotalLoans</strong>
             </div>
 
         </div>
@@ -108,88 +153,58 @@
 
         <div class="simple-book-grid">
 
-            <div class="simple-book-card">
+            @{
+                var books = ViewBag.FeaturedBooks as List<LibraryAdvanced.Models.Book> 
+                    ?? new List<LibraryAdvanced.Models.Book>();
+            }
 
-                <div class="book-image">
-                    📕
+            @if (books.Any())
+            {
+                @foreach (var book in books)
+                {
+                    <a asp-controller="Books"
+                       asp-action="Details"
+                       asp-route-id="@book.Id"
+                       class="simple-book-card">
+
+                        <div class="book-image">
+                            @if (!string.IsNullOrEmpty(book.ImagePath))
+                            {
+                                <img src="@book.ImagePath" 
+                                     alt="@book.Title"
+                                     style="width: 100%; height: 100%; object-fit: cover;"
+                                     onerror="this.style.display='none'; this.nextElementSibling?.classList.remove('hidden');" />
+                            }
+                            <span class="@(string.IsNullOrEmpty(book.ImagePath) ? "" : "hidden")">
+                                📚
+                            </span>
+                        </div>
+
+                        <div class="book-info">
+
+                            <h3>
+                                @book.Title
+                            </h3>
+
+                            <p>
+                                @book.Author
+                            </p>
+
+                        </div>
+
+                    </a>
+                }
+            }
+            else
+            {
+                <div class="simple-book-card">
+                    <div class="book-image">📚</div>
+                    <div class="book-info">
+                        <h3>Chưa có sách</h3>
+                        <p>Vui lòng thêm sách</p>
+                    </div>
                 </div>
-
-                <div class="book-info">
-
-                    <h3>
-                        Sách mẫu
-                    </h3>
-
-                    <p>
-                        Tác giả
-                    </p>
-
-                </div>
-
-            </div>
-
-
-            <div class="simple-book-card">
-
-                <div class="book-image">
-                    📘
-                </div>
-
-                <div class="book-info">
-
-                    <h3>
-                        Sách mẫu
-                    </h3>
-
-                    <p>
-                        Tác giả
-                    </p>
-
-                </div>
-
-            </div>
-
-
-            <div class="simple-book-card">
-
-                <div class="book-image">
-                    📗
-                </div>
-
-                <div class="book-info">
-
-                    <h3>
-                        Sách mẫu
-                    </h3>
-
-                    <p>
-                        Tác giả
-                    </p>
-
-                </div>
-
-            </div>
-
-
-            <div class="simple-book-card">
-
-                <div class="book-image">
-                    📙
-                </div>
-
-                <div class="book-info">
-
-                    <h3>
-                        Sách mẫu
-                    </h3>
-
-                    <p>
-                        Tác giả
-                    </p>
-
-                </div>
-
-            </div>
+            }
 
         </div>
 
@@ -216,40 +231,37 @@
 
         <div class="category-list">
 
-            <a href="#" class="category-item">
-                <span>💻</span>
-                <div>
-                    <strong>Công nghệ thông tin</strong>
-                    <small>Sách CNTT</small>
+            @{
+                var categories = ViewBag.Categories as List<LibraryAdvanced.Models.Category> 
+                    ?? new List<LibraryAdvanced.Models.Category>();
+            }
+
+            @if (categories.Any())
+            {
+                @foreach (var category in categories)
+                {
+                    <a asp-controller="Books"
+                       asp-action="Index"
+                       asp-route-categoryId="@category.Id"
+                       class="category-item">
+                        <span>📚</span>
+                        <div>
+                            <strong>@category.Name</strong>
+                            <small>Thể loại: @category.Name</small>
+                        </div>
+                    </a>
+                }
+            }
+            else
+            {
+                <div class="category-item">
+                    <span>📚</span>
+                    <div>
+                        <strong>Chưa có danh mục</strong>
+                        <small>Vui lòng thêm danh mục</small>
+                    </div>
                 </div>
-            </a>
-
-
-            <a href="#" class="category-item">
-                <span>🧠</span>
-                <div>
-                    <strong>Kỹ năng sống</strong>
-                    <small>Sách kỹ năng</small>
-                </div>
-            </a>
-
-
-            <a href="#" class="category-item">
-                <span>💼</span>
-                <div>
-                    <strong>Kinh tế</strong>
-                    <small>Sách kinh tế</small>
-                </div>
-            </a>
-
-
-            <a href="#" class="category-item">
-                <span>📖</span>
-                <div>
-                    <strong>Tiểu thuyết</strong>
-                    <small>Sách tiểu thuyết</small>
-                </div>
-            </a>
+            }
 
         </div>
 

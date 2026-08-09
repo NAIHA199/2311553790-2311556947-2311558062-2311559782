@@ -77,6 +77,10 @@ public partial class LibraryAdvancedDbContext : DbContext
             entity.Property(e => e.Status)
                 .HasMaxLength(50)
                 .HasDefaultValue("Borrowed");
+
+            entity.HasOne(d => d.User).WithMany()
+                .HasForeignKey(d => d.UserId)
+                .HasConstraintName("FK_LoanTickets_Users");
         });
 
         modelBuilder.Entity<Role>(entity =>
