@@ -10,14 +10,21 @@
             : "Xem sách";
 
 
-    var categories =
-        ViewBag.Categories as List<LibraryAdvanced.Models.Category>
-        ?? new List<LibraryAdvanced.Models.Category>();
+    var categoriesSelectList = 
+        ViewBag.Categories as Microsoft.AspNetCore.Mvc.Rendering.SelectList 
+        ?? new Microsoft.AspNetCore.Mvc.Rendering.SelectList(new List<LibraryAdvanced.Models.Category>());
 
+    string? search = ViewBag.SearchString;
 
-    string? search = ViewBag.Search;
-
-    int? categoryId = ViewBag.CategoryId;
+    int? categoryId = null;
+    if (ViewBag.CategoryId is int catIdInt)
+    {
+        categoryId = catIdInt;
+    }
+    else if (ViewBag.CategoryId is string catIdStr && int.TryParse(catIdStr, out int catIdParsed))
+    {
+        categoryId = catIdParsed;
+    }
 
     string? status = ViewBag.Status;
 }
@@ -87,36 +94,10 @@
 
 
         <select name="categoryId"
-                class="filter-select">
-
-            <option value="">
-                Tất cả thể loại
-            </option>
-
-
-            @foreach (var category in categories)
-            {
-                if (categoryId == category.Id)
-                {
-                    <option value="@category.Id"
-                            selected>
-
-                        @category.Name
-
-                    </option>
-                }
-                else
-                {
-                    <option value="@category.Id">
-
-                        @category.Name
-
-                    </option>
-                }
-            }
-
+                class="filter-select"
+                asp-items="categoriesSelectList">
+            <option value="">Tất cả thể loại</option>
         </select>
-
 
 
         <select name="status"
@@ -259,11 +240,15 @@
 
                                 <div class="admin-book-cover">
 
-                                    <img src="/uploads/books/@(book.Id).jpg"
-                                         alt="@book.Title"
-                                         onerror="this.style.display='none';" />
+                                    @if (!string.IsNullOrEmpty(book.ImagePath))
+                                    {
+                                        <img src="@book.ImagePath"
+                                             alt="@book.Title"
+                                             class="book-image"
+                                             onerror="this.style.display='none'; this.nextElementSibling?.classList.remove('hidden');" />
+                                    }
 
-                                    <span>
+                                    <span class="@(string.IsNullOrEmpty(book.ImagePath) ? "" : "hidden")">
                                         📖
                                     </span>
 
@@ -474,34 +459,9 @@ else
 
 
         <select name="categoryId"
-                class="filter-select">
-
-            <option value="">
-                Tất cả thể loại
-            </option>
-
-
-            @foreach (var category in categories)
-            {
-                if (categoryId == category.Id)
-                {
-                    <option value="@category.Id"
-                            selected>
-
-                        @category.Name
-
-                    </option>
-                }
-                else
-                {
-                    <option value="@category.Id">
-
-                        @category.Name
-
-                    </option>
-                }
-            }
-
+                class="filter-select"
+                asp-items="categoriesSelectList">
+            <option value="">Tất cả thể loại</option>
         </select>
 
 
@@ -598,7 +558,15 @@ else
 
                     <div class="book-cover">
 
-                        <span>
+                        @if (!string.IsNullOrEmpty(book.ImagePath))
+                        {
+                            <img src="@book.ImagePath"
+                                 alt="@book.Title"
+                                 class="book-image"
+                                 onerror="this.style.display='none'; this.nextElementSibling?.classList.remove('hidden');" />
+                        }
+
+                        <span class="@(string.IsNullOrEmpty(book.ImagePath) ? "" : "hidden")">
                             📖
                         </span>
 

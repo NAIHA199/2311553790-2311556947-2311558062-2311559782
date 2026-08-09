@@ -15,6 +15,8 @@ public partial class Book
 
     public int CategoryId { get; set; }
 
+    public string? ImagePath { get; set; }
+
     public virtual Category Category { get; set; } = null!;
 
     public virtual ICollection<LoanDetail> LoanDetails { get; set; } = new List<LoanDetail>();

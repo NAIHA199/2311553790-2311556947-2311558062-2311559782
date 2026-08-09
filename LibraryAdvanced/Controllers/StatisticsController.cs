@@ -183,82 +183,56 @@ namespace LibraryAdvanced.Controllers
             return View(viewModel);
         }
         [HttpGet]
+
         public async Task<IActionResult> GetBorrowedBooksChart(
         DateTime? TuNgay,
         DateTime? DenNgay)
         {
             const int KHOANG_CACH_NGAY = 30;
 
-
-            if (!TuNgay.HasValue &&
-                !DenNgay.HasValue)
+            if (!TuNgay.HasValue && !DenNgay.HasValue)
             {
                 DenNgay = DateTime.Now.Date;
-
-                TuNgay =
-                    DenNgay.Value.AddDays(
-                        -KHOANG_CACH_NGAY);
+                TuNgay = DenNgay.Value.AddDays(-KHOANG_CACH_NGAY);
             }
-
-            else if (
-                TuNgay.HasValue &&
-                !DenNgay.HasValue)
+            else if (TuNgay.HasValue && !DenNgay.HasValue)
             {
-                DenNgay =
-                    TuNgay.Value.AddDays(
-                        KHOANG_CACH_NGAY);
+                DenNgay = TuNgay.Value.AddDays(KHOANG_CACH_NGAY);
             }
-
-            else if (
-                !TuNgay.HasValue &&
-                DenNgay.HasValue)
+            else if (!TuNgay.HasValue && DenNgay.HasValue)
             {
-                TuNgay =
-                    DenNgay.Value.AddDays(
-                        -KHOANG_CACH_NGAY);
+                TuNgay = DenNgay.Value.AddDays(-KHOANG_CACH_NGAY);
             }
 
+            if (TuNgay > DenNgay)
+            {
+                return BadRequest("Từ ngày không được lớn hơn đến ngày.");
+            }
 
             var denNgayExclusive =
                 DenNgay!.Value.Date.AddDays(1);
 
-
-            var data =
-                await _context.LoanDetails
-
-                    .Where(ld =>
-                        ld.LoanTicket.BorrowDate >=
-                            TuNgay!.Value.Date
-
-                        &&
-
-                        ld.LoanTicket.BorrowDate <
-                            denNgayExclusive
-                    )
-
-                    .GroupBy(ld => new
-                    {
-                        ld.BookId,
-                        ld.Book.Title
-                    })
-
-                    .Select(g => new
-                    {
-                        BookTitle =
-                            g.Key.Title,
-
-                        SoLuongMuon =
-                            g.Sum(ld => ld.Quantity)
-                    })
-
-                    .OrderByDescending(x =>
-                        x.SoLuongMuon)
-
-                    .ToListAsync();
-
+            var data = await _context.LoanDetails
+                .Where(ld =>
+                    ld.LoanTicket.BorrowDate >= TuNgay!.Value.Date &&
+                    ld.LoanTicket.BorrowDate < denNgayExclusive
+                )
+                .GroupBy(ld => new
+                {
+                    BookId = ld.BookId,
+                    BookTitle = ld.Book.Title
+                })
+                .Select(g => new
+                {
+                    BookTitle = g.Key.BookTitle,
+                    SoLuongMuon = g.Sum(x => x.Quantity)
+                })
+                .OrderByDescending(x => x.SoLuongMuon)
+                .ToListAsync();
 
             return Json(data);
         }
+    
 
     }
 

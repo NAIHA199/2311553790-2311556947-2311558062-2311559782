@@ -1,5 +1,6 @@
 ﻿using LibraryAdvanced.Authorization;
 using LibraryAdvanced.Models;
+using LibraryAdvanced.ViewModel;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
@@ -26,7 +27,7 @@ namespace LibraryAdvanced.Controllers
         // =========================================
 
         public async Task<IActionResult> Index(
-            string searchString,
+            string search,
             int? categoryId)
         {
             var query = _context.Books
@@ -34,11 +35,11 @@ namespace LibraryAdvanced.Controllers
                 .AsQueryable();
 
             // Tìm kiếm
-            if (!string.IsNullOrWhiteSpace(searchString))
+            if (!string.IsNullOrWhiteSpace(search))
             {
                 query = query.Where(b =>
-                    b.Title.Contains(searchString) ||
-                    b.Author.Contains(searchString));
+                    b.Title.Contains(search) ||
+                    b.Author.Contains(search));
             }
 
             // Lọc danh mục
@@ -56,7 +57,7 @@ namespace LibraryAdvanced.Controllers
                     categoryId
                 );
 
-            ViewBag.SearchString = searchString;
+            ViewBag.SearchString = search;
 
             var books = await query
                 .OrderBy(b => b.Title)
@@ -116,29 +117,124 @@ namespace LibraryAdvanced.Controllers
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create(
-            Book book,
-            IFormFile? imageFile)
+            CreateBookViewModel model)
         {
+            // =====================================
+            // KIỂM TRA MODEL
+            // =====================================
+
             if (!ModelState.IsValid)
             {
                 await LoadCategories(
-                    book.CategoryId);
+                    model.CategoryId);
 
-                return View(book);
+                return View(model);
             }
+
+
+            // =====================================
+            // KIỂM TRA CATEGORY
+            // =====================================
+
+            var category =
+                await _context.Categories
+                    .FirstOrDefaultAsync(
+                        c => c.Id == model.CategoryId);
+
+            if (category == null)
+            {
+                ModelState.AddModelError(
+                    "CategoryId",
+                    "Danh mục không tồn tại.");
+
+                await LoadCategories(
+                    model.CategoryId);
+
+                return View(model);
+            }
+
+
+            // =====================================
+            // KIỂM TRA ẢNH
+            // =====================================
+
+            if (model.ImageFile != null &&
+                model.ImageFile.Length > 0)
+            {
+                var allowedExtensions =
+                    new[]
+                    {
+                        ".jpg",
+                        ".jpeg",
+                        ".png",
+                        ".webp"
+                    };
+
+                var extension =
+                    Path.GetExtension(
+                        model.ImageFile.FileName)
+                        .ToLowerInvariant();
+
+                if (!allowedExtensions.Contains(
+                    extension))
+                {
+                    ModelState.AddModelError(
+                        "ImageFile",
+                        "Chỉ cho phép JPG, JPEG, PNG hoặc WEBP.");
+
+                    await LoadCategories(
+                        model.CategoryId);
+
+                    return View(model);
+                }
+            }
+
+
+            // =====================================
+            // TẠO BOOK
+            // =====================================
+
+            var book = new Book
+            {
+                Title = model.Title,
+                Author = model.Author,
+                CategoryId = model.CategoryId,
+
+                AvailableQuantity = model.AvailableQuantity
+            };
+
+
+            // =====================================
+            // LƯU BOOK
+            // =====================================
 
             _context.Books.Add(book);
 
             await _context.SaveChangesAsync();
 
-            // Upload ảnh sau khi có Book.Id
-            if (imageFile != null &&
-                imageFile.Length > 0)
+
+            // =====================================
+            // UPLOAD ẢNH
+            // Sau khi đã có Book.Id
+            // =====================================
+
+            if (model.ImageFile != null &&
+                model.ImageFile.Length > 0)
             {
-                await SaveBookImage(
+                var imagePath = await SaveBookImage(
                     book.Id,
-                    imageFile);
+                    model.ImageFile);
+
+                // Lưu ImagePath vào database
+                book.ImagePath = imagePath;
+
+                await _context.SaveChangesAsync();
             }
+
+
+            // =====================================
+            // QUAY VỀ DANH SÁCH
+            // =====================================
 
             return RedirectToAction(
                 nameof(Index));
@@ -185,52 +281,122 @@ namespace LibraryAdvanced.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Edit(
             int id,
-            Book book,
+            string Title,
+            string Author,
+            int CategoryId,
+            int AvailableQuantity,
             IFormFile? imageFile)
         {
-            if (id != book.Id)
+            // =========================================
+            // TÌM SÁCH HIỆN TẠI
+            // =========================================
+
+            var existingBook = await _context.Books
+                .FirstOrDefaultAsync(b => b.Id == id);
+
+            if (existingBook == null)
             {
                 return NotFound();
             }
 
+
+            // =========================================
+            // KIỂM TRA DANH MỤC
+            // =========================================
+
+            var categoryExists = await _context.Categories
+                .AnyAsync(c => c.Id == CategoryId);
+
+            if (!categoryExists)
+            {
+                ModelState.AddModelError(
+                    "CategoryId",
+                    "Danh mục không tồn tại.");
+
+                await LoadCategories(CategoryId);
+
+                return View(existingBook);
+            }
+
+
+            // =========================================
+            // KIỂM TRA DỮ LIỆU
+            // =========================================
+
+            if (string.IsNullOrWhiteSpace(Title))
+            {
+                ModelState.AddModelError(
+                    "Title",
+                    "Vui lòng nhập tên sách.");
+            }
+
+            if (string.IsNullOrWhiteSpace(Author))
+            {
+                ModelState.AddModelError(
+                    "Author",
+                    "Vui lòng nhập tác giả.");
+            }
+
+            if (AvailableQuantity < 0)
+            {
+                ModelState.AddModelError(
+                    "AvailableQuantity",
+                    "Số lượng không được nhỏ hơn 0.");
+            }
+
+
             if (!ModelState.IsValid)
             {
-                await LoadCategories(
-                    book.CategoryId);
+                await LoadCategories(CategoryId);
 
-                return View(book);
+                return View(existingBook);
             }
 
-            try
+
+            // =========================================
+            // CẬP NHẬT SÁCH
+            // =========================================
+
+            existingBook.Title = Title.Trim();
+
+            existingBook.Author = Author.Trim();
+
+            existingBook.CategoryId = CategoryId;
+
+            existingBook.AvailableQuantity = AvailableQuantity;
+
+
+            // =========================================
+            // LƯU DATABASE
+            // =========================================
+
+            await _context.SaveChangesAsync();
+
+
+            // =========================================
+            // THAY ẢNH NẾU CÓ
+            // =========================================
+
+            if (imageFile != null &&
+                imageFile.Length > 0)
             {
-                _context.Update(book);
+                var imagePath = await SaveBookImage(
+                    existingBook.Id,
+                    imageFile);
+
+                // Lưu ImagePath vào database
+                existingBook.ImagePath = imagePath;
 
                 await _context.SaveChangesAsync();
-
-                if (imageFile != null &&
-                    imageFile.Length > 0)
-                {
-                    await SaveBookImage(
-                        book.Id,
-                        imageFile);
-                }
-            }
-            catch (DbUpdateConcurrencyException)
-            {
-                if (!BookExists(book.Id))
-                {
-                    return NotFound();
-                }
-
-                throw;
             }
 
-            return RedirectToAction(
-                nameof(Index));
-        }
 
+            // =========================================
+            // QUAY VỀ DANH SÁCH
+            // =========================================
 
-        // =========================================
+            return RedirectToAction(nameof(Index));
+        }        // =========================================
         // DELETE - GET
         // ADMIN
         // =========================================
@@ -278,9 +444,10 @@ namespace LibraryAdvanced.Controllers
                 return NotFound();
             }
 
-            // Xóa ảnh của sách
+            // Xóa ảnh
             DeleteBookImage(book.Id);
 
+            // Xóa sách
             _context.Books.Remove(book);
 
             await _context.SaveChangesAsync();
@@ -313,41 +480,54 @@ namespace LibraryAdvanced.Controllers
         // SAVE IMAGE
         // =========================================
 
-        private async Task SaveBookImage(
+        private async Task<string?> SaveBookImage(
             int bookId,
             IFormFile imageFile)
         {
-            var folder = Path.Combine(
-                _environment.WebRootPath,
-                "uploads",
-                "books");
+            var folder =
+                Path.Combine(
+                    _environment.WebRootPath,
+                    "uploads",
+                    "books");
+
 
             if (!Directory.Exists(folder))
             {
                 Directory.CreateDirectory(folder);
             }
 
-            // Xóa ảnh cũ trước
+
+            // Xóa ảnh cũ
             DeleteBookImage(bookId);
+
 
             var extension =
                 Path.GetExtension(
-                    imageFile.FileName);
+                    imageFile.FileName)
+                    .ToLowerInvariant();
+
 
             var fileName =
                 $"{bookId}{extension}";
+
 
             var filePath =
                 Path.Combine(
                     folder,
                     fileName);
 
+
             using var stream =
                 new FileStream(
                     filePath,
                     FileMode.Create);
 
-            await imageFile.CopyToAsync(stream);
+
+            await imageFile.CopyToAsync(
+                stream);
+
+            // Return the relative path to store in database
+            return $"/uploads/books/{fileName}";
         }
 
 
@@ -358,20 +538,24 @@ namespace LibraryAdvanced.Controllers
         private void DeleteBookImage(
             int bookId)
         {
-            var folder = Path.Combine(
-                _environment.WebRootPath,
-                "uploads",
-                "books");
+            var folder =
+                Path.Combine(
+                    _environment.WebRootPath,
+                    "uploads",
+                    "books");
+
 
             if (!Directory.Exists(folder))
             {
                 return;
             }
 
+
             var files =
                 Directory.GetFiles(
                     folder,
                     $"{bookId}.*");
+
 
             foreach (var file in files)
             {
@@ -379,6 +563,10 @@ namespace LibraryAdvanced.Controllers
             }
         }
 
+
+        // =========================================
+        // CHECK BOOK
+        // =========================================
 
         private bool BookExists(int id)
         {

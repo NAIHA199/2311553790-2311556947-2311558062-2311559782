@@ -283,135 +283,107 @@
         let myChart = null;
 
 
-        // =====================================
-        // DỮ LIỆU BAN ĐẦU
-        // =====================================
-
-        const initialData =
-                    @Html.Raw(chartJson);
-
-
-
-        // =====================================
-        // VẼ BIỂU ĐỒ
-        // =====================================
-
         function drawChart(data) {
 
-            const labels =
-                data.map(
-                    item => item.BookTitle
+            console.log("DATA NHẬN ĐƯỢC:", data);
+
+
+            const labels = data.map(item =>
+                item.bookTitle ?? item.BookTitle
+            );
+
+
+            const values = data.map(item =>
+                item.soLuongMuon ?? item.SoLuongMuon
+            );
+
+
+            console.log("LABELS:", labels);
+            console.log("VALUES:", values);
+
+
+            const canvas =
+                document.getElementById("myChart");
+
+
+            if (!canvas) {
+
+                console.error(
+                    "Không tìm thấy canvas #myChart"
                 );
 
-
-            const statistics =
-                data.map(
-                    item => item.SoLuongMuon
-                );
-
-
-            // Xóa chart cũ
-            if (myChart !== null) {
-                myChart.destroy();
+                return;
             }
 
 
-            const ctx =
-                document
-                    .getElementById("myChart");
+            // Xóa biểu đồ cũ
+            if (myChart !== null) {
+
+                myChart.destroy();
+
+            }
 
 
-            myChart =
-                new Chart(
-                    ctx,
-                    {
+            myChart = new Chart(canvas, {
 
-                        type: "bar",
+                type: "bar",
 
+                data: {
 
-                        data:
-                        {
-                            labels: labels,
+                    labels: labels,
 
+                    datasets: [{
 
-                            datasets:
-                                [
-                                    {
+                        label:
+                            "Số lượng sách được mượn",
 
-                                        label:
-                                            "Số lượng sách được mượn",
+                        data: values,
 
+                        borderWidth: 1
 
-                                        data:
-                                            statistics,
+                    }]
 
+                },
 
-                                        borderWidth:
-                                            1
+                options: {
 
-                                    }
-                                ]
-                        },
+                    responsive: true,
 
+                    maintainAspectRatio: false,
 
-                        options:
-                        {
-                            responsive: true,
+                    scales: {
 
+                        y: {
 
-                            maintainAspectRatio:
-                                false,
+                            beginAtZero: true,
 
+                            ticks: {
 
-                            scales:
-                            {
-                                y:
-                                {
-                                    beginAtZero:
-                                        true,
+                                precision: 0
 
-
-                                    ticks:
-                                    {
-                                        precision:
-                                            0
-                                    }
-                                }
-                            },
-
-
-                            plugins:
-                            {
-                                legend:
-                                {
-                                    display:
-                                        true
-                                }
                             }
+
                         }
 
                     }
-                );
+
+                }
+
+            });
+
         }
 
 
 
-        // =====================================
-        // KHI TRANG LOAD
-        // =====================================
-
         $(document).ready(function() {
 
-            // Vẽ dữ liệu mặc định
-            drawChart(initialData);
 
-
-
-            // =================================
+            // =====================================
             // TRA CỨU
-            // =================================
+            // =====================================
 
-            $("#btnTraCuu").click(function() {
+            $("#btnTraCuu").on("click", function() {
+
                 const tuNgay =
                     $("#tuNgay").val();
 
@@ -419,7 +391,13 @@
                     $("#denNgay").val();
 
 
+                console.log("Từ ngày:", tuNgay);
+
+                console.log("Đến ngày:", denNgay);
+
+
                 if (!tuNgay || !denNgay) {
+
                     alert(
                         "Vui lòng chọn đầy đủ ngày."
                     );
@@ -429,6 +407,7 @@
 
 
                 if (tuNgay > denNgay) {
+
                     alert(
                         "Từ ngày không được lớn hơn đến ngày."
                     );
@@ -437,36 +416,55 @@
                 }
 
 
-                $.ajax(
-                    {
-                        url:
-                            "/Statistics/GetBorrowedBooksChart",
+                $.ajax({
 
-                        type:
-                            "GET",
+                    url:
+                        "/Statistics/GetBorrowedBooksChart",
 
-                        data:
-                        {
-                            TuNgay:
-                                tuNgay,
+                    type: "GET",
 
-                            DenNgay:
-                                denNgay
-                        },
+                    data: {
 
-                        success:
-                            function(data) {
-                                drawChart(data);
-                            },
+                        TuNgay: tuNgay,
 
-                        error:
-                            function() {
-                                alert(
-                                    "Không thể tải dữ liệu thống kê."
-                                );
-                            }
-                    });
+                        DenNgay: denNgay
+
+                    },
+
+
+                    success: function(data) {
+
+                        console.log(
+                            "API TRẢ VỀ:",
+                            data
+                        );
+
+
+                        drawChart(data);
+
+                    },
+
+
+                    error: function(xhr) {
+
+                        console.error(
+                            "API ERROR:",
+                            xhr.status,
+                            xhr.responseText
+                        );
+
+
+                        alert(
+                            "Không tải được dữ liệu biểu đồ."
+                        );
+
+                    }
+
+                });
+
             });
-    </script>
 
+        });
+
+    </script>
 }

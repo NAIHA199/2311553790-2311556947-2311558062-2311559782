@@ -25,7 +25,15 @@
 
         <div class="detail-cover">
 
-            <div class="detail-book-icon">
+            @if (!string.IsNullOrEmpty(Model.ImagePath))
+            {
+                <img src="@Model.ImagePath" 
+                     alt="@Model.Title" 
+                     class="detail-book-image"
+                     onerror="this.style.display='none'; this.nextElementSibling?.classList.remove('hidden');" />
+            }
+
+            <div class="detail-book-icon @(string.IsNullOrEmpty(Model.ImagePath) ? "" : "hidden")">
                 📖
             </div>
 
@@ -119,7 +127,12 @@
 
 
             <!-- ACTION -->
-            @if (Model.AvailableQuantity > 0)
+            @{
+                var userRole = Context.Session.GetString("Role");
+                var isAdmin = userRole?.Equals("Admin", StringComparison.OrdinalIgnoreCase) ?? false;
+            }
+
+            @if (!isAdmin && Model.AvailableQuantity > 0)
             {
                 @if (Model.AvailableQuantity > 0)
                 {
@@ -128,7 +141,7 @@
                        asp-route-bookId="@Model.Id"
                        class="borrow-button">
 
-                        📖 Mượn sách
+                         📖 Mượn sách
 
                     </a>
                 }
@@ -142,7 +155,7 @@
                     </button>
                 }
             }
-            else
+            else if (!isAdmin)
             {
                 <button class="borrow-button disabled"
                         disabled>
