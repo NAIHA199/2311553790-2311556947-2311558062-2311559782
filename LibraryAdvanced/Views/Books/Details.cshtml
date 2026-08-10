@@ -29,13 +29,16 @@
             {
                 <img src="@Model.ImagePath" 
                      alt="@Model.Title" 
-                     class="detail-book-image"
-                     onerror="this.style.display='none'; this.nextElementSibling?.classList.remove('hidden');" />
+                     style="max-height: 100%; max-width: 100%; object-fit: contain; border-radius: 8px;"
+                     onerror="this.style.display='none'; this.nextElementSibling?.removeAttribute('style')" />
+                <div class="detail-book-icon" style="display: none;">📖</div>
             }
-
-            <div class="detail-book-icon @(string.IsNullOrEmpty(Model.ImagePath) ? "" : "hidden")">
-                📖
-            </div>
+            else
+            {
+                <div class="detail-book-icon">
+                    📖
+                </div>
+            }
 
         </div>
 
@@ -128,11 +131,10 @@
 
             <!-- ACTION -->
             @{
-                var userRole = Context.Session.GetString("Role");
-                var isAdmin = userRole?.Equals("Admin", StringComparison.OrdinalIgnoreCase) ?? false;
+                var role = Context.Session.GetString("Role");
             }
 
-            @if (!isAdmin && Model.AvailableQuantity > 0)
+            @if (role != "Admin" && Model.AvailableQuantity > 0)
             {
                 @if (Model.AvailableQuantity > 0)
                 {
@@ -155,7 +157,7 @@
                     </button>
                 }
             }
-            else if (!isAdmin)
+            else if (role != "Admin")
             {
                 <button class="borrow-button disabled"
                         disabled>

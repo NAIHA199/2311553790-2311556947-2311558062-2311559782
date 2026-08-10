@@ -38,22 +38,21 @@ namespace LibraryAdvanced.Controllers
 
 
             // =====================================
-            // 1. TỔNG SỐ SÁCH
-            // (Cả Admin và Reader đều xem tổng)
+            // 1. TỔNG SỐ SÁCH (TẤT CẢ)
             // =====================================
 
             var totalBooks = await _context.Books.CountAsync();
 
 
             // =====================================
-            // 2. SÁCH ĐANG MƯỢN
+            // 2. SÁCH ĐANG MƯỢN (SỐ LƯỢNG)
             // =====================================
 
             int borrowedBooks;
 
             if (role == "Reader")
             {
-                // Reader: chỉ sách của chính mình
+                // Reader: chỉ số lượng sách đang mượn của mình
                 borrowedBooks = await _context.LoanDetails
                     .Where(ld => ld.LoanTicket.Status == "Borrowed" && 
                                  ld.LoanTicket.UserId == currentUser!.Id)
@@ -61,7 +60,7 @@ namespace LibraryAdvanced.Controllers
             }
             else
             {
-                // Admin: tất cả sách đang mượn
+                // Admin: tổng số lượng sách đang mượn (tất cả)
                 borrowedBooks = await _context.LoanDetails
                     .Where(ld => ld.LoanTicket.Status == "Borrowed")
                     .SumAsync(ld => (int?)ld.Quantity) ?? 0;
@@ -69,21 +68,21 @@ namespace LibraryAdvanced.Controllers
 
 
             // =====================================
-            // 3. LỊCH SỬ MƯỢN (TỔNG PHIẾU)
+            // 3. LỊCH SỬ MƯỢN (SỐ PHIẾU MƯỢN)
             // =====================================
 
             int totalLoans;
 
             if (role == "Reader")
             {
-                // Reader: chỉ phiếu của chính mình
+                // Reader: chỉ phiếu của chính mình (tất cả phiếu)
                 totalLoans = await _context.LoanTickets
                     .Where(lt => lt.UserId == currentUser!.Id)
                     .CountAsync();
             }
             else
             {
-                // Admin: tất cả phiếu
+                // Admin: tất cả phiếu trong hệ thống
                 totalLoans = await _context.LoanTickets.CountAsync();
             }
 

@@ -1,7 +1,5 @@
 ﻿@{
     ViewData["Title"] = "Trang chủ";
-    var userRole = ViewBag.UserRole as string;
-    var displayName = ViewBag.DisplayName as string;
 }
 
 <div class="home-page">
@@ -10,36 +8,18 @@
     <div class="home-welcome">
 
         <div>
-            @if (userRole == "Reader")
-            {
-                <span class="welcome-label">
-                    CỬ NHÂN ĐỌC GIẢ
-                </span>
+            <span class="welcome-label">
+                THƯ VIỆN TRỰC TUYẾN
+            </span>
 
-                <h1>
-                    Xin chào, @displayName 👋
-                </h1>
+            <h1>
+                Chào mừng bạn đến với thư viện 📚
+            </h1>
 
-                <p>
-                    Quản lý sách đang mượn và khám phá những cuốn sách
-                    hay trong thư viện.
-                </p>
-            }
-            else
-            {
-                <span class="welcome-label">
-                    QUẢN TRỊ VIÊN
-                </span>
-
-                <h1>
-                    Chào mừng bạn đến với Dashboard 📊
-                </h1>
-
-                <p>
-                    Quản lý hệ thống thư viện, theo dõi các phiếu mượn
-                    và xem thống kê chi tiết.
-                </p>
-            }
+            <p>
+                Khám phá những cuốn sách hay và quản lý
+                sách bạn đang mượn một cách dễ dàng.
+            </p>
 
             <a asp-controller="Books"
                asp-action="Index"
@@ -49,14 +29,7 @@
         </div>
 
         <div class="welcome-icon">
-            @if (userRole == "Reader")
-            {
-                <span>👤</span>
-            }
-            else
-            {
-                <span>👑</span>
-            }
+            📚
         </div>
 
     </div>
@@ -64,6 +37,14 @@
 
     <!-- QUICK INFO -->
     <div class="home-stats">
+        <!-- DEBUG -->
+        <div style="display:none;">
+            TotalBooks: @ViewBag.TotalBooks | 
+            BorrowedBooks: @ViewBag.BorrowedBooks | 
+            TotalLoans: @ViewBag.TotalLoans | 
+            UserRole: @ViewBag.UserRole | 
+            DisplayName: @ViewBag.DisplayName
+        </div>
 
         <div class="home-stat">
 
@@ -87,6 +68,9 @@
 
             <div>
                 <span>
+                    @{
+                        var userRole = ViewBag.UserRole as string;
+                    }
                     @if (userRole == "Reader")
                     {
                         <text>Sách đang mượn</text>
@@ -151,59 +135,63 @@
         </div>
 
 
-        <div class="simple-book-grid">
+        <div class="featured-books-list">
 
             @{
-                var books = ViewBag.FeaturedBooks as List<LibraryAdvanced.Models.Book> 
-                    ?? new List<LibraryAdvanced.Models.Book>();
+                var featuredBooks = ViewBag.FeaturedBooks as List<Book> ?? new List<Book>();
             }
 
-            @if (books.Any())
+            @if (featuredBooks.Count > 0)
             {
-                @foreach (var book in books)
+                @foreach (var book in featuredBooks)
                 {
-                    <a asp-controller="Books"
-                       asp-action="Details"
-                       asp-route-id="@book.Id"
-                       class="simple-book-card">
+                    <div class="featured-book-card">
 
-                        <div class="book-image">
+                        <div class="featured-book-image">
                             @if (!string.IsNullOrEmpty(book.ImagePath))
                             {
-                                <img src="@book.ImagePath" 
-                                     alt="@book.Title"
-                                     style="width: 100%; height: 100%; object-fit: cover;"
-                                     onerror="this.style.display='none'; this.nextElementSibling?.classList.remove('hidden');" />
+                                <img src="@book.ImagePath" alt="@book.Title" onerror="this.style.display='none'; this.nextElementSibling?.style.removeProperty('display')" />
+                                <div style="display: none; width: 100%; height: 100%; background: #3b82f6; border-radius: 6px; display: flex; align-items: center; justify-content: center; font-size: 40px;">📖</div>
                             }
-                            <span class="@(string.IsNullOrEmpty(book.ImagePath) ? "" : "hidden")">
-                                📚
-                            </span>
+                            else
+                            {
+                                <div style="width: 100%; height: 100%; background: #3b82f6; border-radius: 6px; display: flex; align-items: center; justify-content: center; font-size: 40px;">📖</div>
+                            }
                         </div>
 
-                        <div class="book-info">
+                        <div class="featured-book-content">
 
-                            <h3>
+                            <div class="featured-book-header">
+                                <span class="featured-book-label">@(Model?.CategoryName ?? "Lập trình")</span>
+                            </div>
+
+                            <h3 class="featured-book-title">
                                 @book.Title
                             </h3>
 
-                            <p>
+                            <p class="featured-book-author">
                                 @book.Author
                             </p>
 
+                            <div class="featured-book-footer">
+                                <span class="featured-book-available">
+                                    Còn 14 cuốn
+                                </span>
+                                <a asp-controller="Books" asp-action="Details" asp-route-id="@book.Id" class="featured-book-link">
+                                    Chi tiết →
+                                </a>
+                            </div>
+
                         </div>
 
-                    </a>
+                    </div>
                 }
             }
             else
             {
-                <div class="simple-book-card">
-                    <div class="book-image">📚</div>
-                    <div class="book-info">
-                        <h3>Chưa có sách</h3>
-                        <p>Vui lòng thêm sách</p>
-                    </div>
-                </div>
+                <p style="text-align: center; padding: 40px; color: #999;">
+                    Chưa có sách nào
+                </p>
             }
 
         </div>
@@ -232,35 +220,27 @@
         <div class="category-list">
 
             @{
-                var categories = ViewBag.Categories as List<LibraryAdvanced.Models.Category> 
-                    ?? new List<LibraryAdvanced.Models.Category>();
+                var categories = ViewBag.Categories as List<Category> ?? new List<Category>();
             }
 
-            @if (categories.Any())
+            @if (categories.Count > 0)
             {
                 @foreach (var category in categories)
                 {
-                    <a asp-controller="Books"
-                       asp-action="Index"
-                       asp-route-categoryId="@category.Id"
-                       class="category-item">
+                    <a asp-controller="Books" asp-action="Index" asp-route-search="" asp-route-category="@category.Id" class="category-item">
                         <span>📚</span>
                         <div>
                             <strong>@category.Name</strong>
-                            <small>Thể loại: @category.Name</small>
+                            <small>Danh mục sách</small>
                         </div>
                     </a>
                 }
             }
             else
             {
-                <div class="category-item">
-                    <span>📚</span>
-                    <div>
-                        <strong>Chưa có danh mục</strong>
-                        <small>Vui lòng thêm danh mục</small>
-                    </div>
-                </div>
+                <p style="grid-column: 1/-1; text-align: center; padding: 20px; color: #999;">
+                    Chưa có danh mục nào
+                </p>
             }
 
         </div>

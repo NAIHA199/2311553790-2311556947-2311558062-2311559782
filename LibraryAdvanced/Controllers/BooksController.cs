@@ -27,26 +27,30 @@ namespace LibraryAdvanced.Controllers
         // =========================================
 
         public async Task<IActionResult> Index(
-            string search,
+            string searchString,
             int? categoryId)
         {
             var query = _context.Books
                 .Include(b => b.Category)
                 .AsQueryable();
 
-            // Tìm kiếm
-            if (!string.IsNullOrWhiteSpace(search))
-            {
-                query = query.Where(b =>
-                    b.Title.Contains(search) ||
-                    b.Author.Contains(search));
-            }
-
             // Lọc danh mục
             if (categoryId.HasValue)
             {
                 query = query.Where(
                     b => b.CategoryId == categoryId.Value);
+            }
+
+            // Chuyển sang client để tìm kiếm
+            var books = await query.ToListAsync();
+
+            // Tìm kiếm (case-insensitive + dấu tiếng Việt)
+            if (!string.IsNullOrWhiteSpace(searchString))
+            {
+                books = books.Where(b =>
+                    b.Title.Contains(searchString, StringComparison.OrdinalIgnoreCase) ||
+                    b.Author.Contains(searchString, StringComparison.OrdinalIgnoreCase))
+                    .ToList();
             }
 
             ViewBag.Categories =
@@ -57,11 +61,11 @@ namespace LibraryAdvanced.Controllers
                     categoryId
                 );
 
-            ViewBag.SearchString = search;
+            ViewBag.SearchString = searchString;
 
-            var books = await query
+            books = books
                 .OrderBy(b => b.Title)
-                .ToListAsync();
+                .ToList();
 
             return View(books);
         }
@@ -225,8 +229,9 @@ namespace LibraryAdvanced.Controllers
                     book.Id,
                     model.ImageFile);
 
-                // Lưu ImagePath vào database
                 book.ImagePath = imagePath;
+
+                _context.Books.Update(book);
 
                 await _context.SaveChangesAsync();
             }
@@ -384,7 +389,6 @@ namespace LibraryAdvanced.Controllers
                     existingBook.Id,
                     imageFile);
 
-                // Lưu ImagePath vào database
                 existingBook.ImagePath = imagePath;
 
                 await _context.SaveChangesAsync();
@@ -526,7 +530,6 @@ namespace LibraryAdvanced.Controllers
             await imageFile.CopyToAsync(
                 stream);
 
-            // Return the relative path to store in database
             return $"/uploads/books/{fileName}";
         }
 

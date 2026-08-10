@@ -17,33 +17,38 @@ public class LoanTicketsController : Controller
     // YÊU CẦU 2 & 3: Hiển thị danh sách, Tìm kiếm theo tên, Lọc theo trạng thái
     public async Task<IActionResult> Index(string searchString, string statusFilter)
     {
+        // =====================================
+        // GET CURRENT USER INFO
+        // =====================================
+
         var role = HttpContext.Session.GetString("Role");
         var username = HttpContext.Session.GetString("Username");
+
+        User? currentUser = null;
+        if (role == "Reader")
+        {
+            currentUser = await _context.Users
+                .FirstOrDefaultAsync(u => u.Username == username);
+
+            if (currentUser == null)
+            {
+                return Unauthorized();
+            }
+        }
+
+        // =====================================
+        // BUILD QUERY
+        // =====================================
 
         var query = _context.LoanTickets
             .Include(lt => lt.LoanDetails)
             .AsQueryable();
 
-        // ==========================================
-        // FILTER BY ROLE
-        // ==========================================
-
-        // Nếu Reader → chỉ xem phiếu của chính mình
+        // Reader: Chỉ xem phiếu của chính mình
         if (role == "Reader")
         {
-            var user = await _context.Users
-                .FirstOrDefaultAsync(u => u.Username == username);
-
-            if (user != null)
-            {
-                query = query.Where(lt => lt.UserId == user.Id);
-            }
-            else
-            {
-                return Unauthorized();
-            }
+            query = query.Where(lt => lt.UserId == currentUser!.Id);
         }
-        // Admin → xem toàn bộ
 
         // 1. Tìm kiếm theo Tên người mượn (khớp 1 phần)
         if (!string.IsNullOrEmpty(searchString))
@@ -72,29 +77,39 @@ public class LoanTicketsController : Controller
         return View(list);
     }
 
-    // Đọc giả: Sách đang mượn
+    // =====================================
+    // SÁCH ĐANG MƯỢN
+    // Reader: Chỉ sách của mình
+    // Admin: Tất cả sách
+    // =====================================
+
     public async Task<IActionResult> Borrowed()
     {
         var role = HttpContext.Session.GetString("Role");
         var username = HttpContext.Session.GetString("Username");
 
-        var query = _context.LoanTickets
-            .Include(lt => lt.LoanDetails)
-                .ThenInclude(ld => ld.Book)
-            .Where(lt => lt.Status == "Borrowed");
-
-        // Nếu Reader → chỉ xem phiếu của chính mình
+        User? currentUser = null;
         if (role == "Reader")
         {
-            var user = await _context.Users
+            currentUser = await _context.Users
                 .FirstOrDefaultAsync(u => u.Username == username);
 
-            if (user == null)
+            if (currentUser == null)
             {
                 return Unauthorized();
             }
+        }
 
-            query = query.Where(lt => lt.UserId == user.Id);
+        var query = _context.LoanTickets
+            .Include(lt => lt.LoanDetails)
+                .ThenInclude(ld => ld.Book)
+            .Where(lt => lt.Status == "Borrowed")
+            .AsQueryable();
+
+        // Reader: Chỉ xem phiếu của chính mình
+        if (role == "Reader")
+        {
+            query = query.Where(lt => lt.UserId == currentUser!.Id);
         }
 
         var list = await query
@@ -104,29 +119,39 @@ public class LoanTicketsController : Controller
         return View(list);
     }
 
-    // Đọc giả: Lịch sử mượn
+    // =====================================
+    // LỊCH SỬ MƯỢN
+    // Reader: Chỉ lịch sử của mình
+    // Admin: Tất cả lịch sử
+    // =====================================
+
     public async Task<IActionResult> History()
     {
         var role = HttpContext.Session.GetString("Role");
         var username = HttpContext.Session.GetString("Username");
 
-        var query = _context.LoanTickets
-            .Include(lt => lt.LoanDetails)
-                .ThenInclude(ld => ld.Book)
-            .Where(lt => lt.Status != "Borrowed");
-
-        // Nếu Reader → chỉ xem phiếu của chính mình
+        User? currentUser = null;
         if (role == "Reader")
         {
-            var user = await _context.Users
+            currentUser = await _context.Users
                 .FirstOrDefaultAsync(u => u.Username == username);
 
-            if (user == null)
+            if (currentUser == null)
             {
                 return Unauthorized();
             }
+        }
 
-            query = query.Where(lt => lt.UserId == user.Id);
+        var query = _context.LoanTickets
+            .Include(lt => lt.LoanDetails)
+                .ThenInclude(ld => ld.Book)
+            .Where(lt => lt.Status != "Borrowed")
+            .AsQueryable();
+
+        // Reader: Chỉ xem phiếu của chính mình
+        if (role == "Reader")
+        {
+            query = query.Where(lt => lt.UserId == currentUser!.Id);
         }
 
         var list = await query
@@ -294,22 +319,23 @@ public class LoanTicketsController : Controller
             // 3. TẠO LOAN TICKET
             // =====================================
 
-            // Lấy UserId từ database
+            // Get UserId từ session
             var username = HttpContext.Session.GetString("Username");
-            var currentUser = await _context.Users
+            var user = await _context.Users
                 .FirstOrDefaultAsync(u => u.Username == username);
 
-            if (currentUser == null)
+            if (user == null)
             {
+                await transaction.RollbackAsync();
                 return Unauthorized();
             }
 
             var loanTicket = new LoanTicket
             {
-                UserId = currentUser.Id,
                 BorrowerName = model.BorrowerName,
                 BorrowDate = DateTime.Now,
-                Status = "Borrowed"
+                Status = "Borrowed",
+                UserId = user.Id
             };
 
             _context.LoanTickets.Add(loanTicket);
