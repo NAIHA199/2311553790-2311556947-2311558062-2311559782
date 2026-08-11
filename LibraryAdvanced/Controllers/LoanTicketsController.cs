@@ -42,6 +42,7 @@ public class LoanTicketsController : Controller
 
         var query = _context.LoanTickets
             .Include(lt => lt.LoanDetails)
+            .ThenInclude(ld => ld.Book)
             .AsQueryable();
 
         // Reader: Chỉ xem phiếu của chính mình
@@ -68,7 +69,13 @@ public class LoanTicketsController : Controller
             BorrowerName = lt.BorrowerName,
             BorrowDate = lt.BorrowDate,
             Status = lt.Status,
-            TotalQuantity = lt.LoanDetails.Sum(ld => ld.Quantity)
+            TotalQuantity = lt.LoanDetails.Sum(ld => ld.Quantity),
+            LoanDetails = lt.LoanDetails.Select(ld => new LoanDetailItemViewModel
+            {
+                BookId = ld.BookId,
+                BookTitle = ld.Book!.Title,
+                Quantity = ld.Quantity
+            }).ToList()
         }).ToListAsync();
 
         ViewBag.SearchString = searchString;
@@ -554,5 +561,26 @@ public class LoanTicketsController : Controller
             return RedirectToAction(
                 nameof(Return));
         }
+    }
+    // =========================================
+    // IN PHIẾU MƯỢN
+    // ADMIN
+    // =========================================
+
+    [RoleAuthorize("Admin")]
+    [HttpGet]
+    public async Task<IActionResult> Print(int id)
+    {
+        var loanTicket = await _context.LoanTickets
+            .Include(lt => lt.LoanDetails)
+                .ThenInclude(ld => ld.Book)
+            .FirstOrDefaultAsync(lt => lt.Id == id);
+
+        if (loanTicket == null)
+        {
+            return NotFound();
+        }
+
+        return View(loanTicket);
     }
 }

@@ -245,10 +245,10 @@
                                         <img src="@book.ImagePath"
                                              alt="@book.Title"
                                              class="book-image"
-                                             onerror="this.style.display='none'; this.nextElementSibling?.classList.remove('hidden');" />
+                                             onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';" />
                                     }
 
-                                    <span class="@(string.IsNullOrEmpty(book.ImagePath) ? "" : "hidden")">
+                                    <span class="book-fallback @(string.IsNullOrEmpty(book.ImagePath) ? "" : "hidden")">
                                         📖
                                     </span>
 
@@ -563,10 +563,10 @@ else
                             <img src="@book.ImagePath"
                                  alt="@book.Title"
                                  class="book-image"
-                                 onerror="this.style.display='none'; this.nextElementSibling?.classList.remove('hidden');" />
+                                 onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';" />
                         }
 
-                        <span class="@(string.IsNullOrEmpty(book.ImagePath) ? "" : "hidden")">
+                        <span class="book-fallback @(string.IsNullOrEmpty(book.ImagePath) ? "" : "hidden")">
                             📖
                         </span>
 
