@@ -2,7 +2,6 @@
 
 @using System.Text.Json
 
-
 @{
     ViewData["Title"] = "Thống kê thư viện";
 
@@ -50,7 +49,6 @@
 
     <!-- =========================================
          1. SÁCH ĐANG MƯỢN
-         GIỮ NGUYÊN
     ========================================== -->
 
     <div class="row my-4">
@@ -60,27 +58,19 @@
             <div class="card text-white bg-primary mb-3">
 
                 <div class="card-header">
-
                     Sách Đang Được Mượn
-
                 </div>
-
 
                 <div class="card-body">
 
                     <h3 class="card-title">
-
                         @Model.TotalActiveBorrowedBooks Cuốn
-
                     </h3>
 
-
                     <p class="card-text">
-
                         Tổng số lượng sách thuộc các
                         phiếu mượn chưa trả
                         ('Borrowed').
-
                     </p>
 
                 </div>
@@ -95,13 +85,10 @@
 
     <!-- =========================================
          2. TOP 3
-         GIỮ NGUYÊN
     ========================================== -->
 
     <h3 class="statistics-section-title">
-
         Top 3 Cuốn Sách Mượn Nhiều Nhất
-
     </h3>
 
 
@@ -111,13 +98,9 @@
 
             <tr>
 
-                <th>
-                    #
-                </th>
+                <th>#</th>
 
-                <th>
-                    Tên Sách
-                </th>
+                <th>Tên Sách</th>
 
                 <th>
                     Tổng Số Lượt / Số Lượng Đã Mượn
@@ -134,7 +117,6 @@
                 int index = 1;
             }
 
-
             @foreach (var book in Model.Top3Books)
             {
                 <tr>
@@ -143,22 +125,16 @@
                         @(index++)
                     </td>
 
-
                     <td>
-
                         <strong>
                             @book.BookTitle
                         </strong>
-
                     </td>
-
 
                     <td>
 
                         <span class="badge bg-success fs-6">
-
                             @book.TotalBorrowedQuantity
-
                         </span>
 
                     </td>
@@ -174,7 +150,6 @@
 
     <!-- =========================================
          3. BIỂU ĐỒ
-         MỚI
     ========================================== -->
 
     <div class="statistics-chart-card mt-5">
@@ -205,6 +180,8 @@
         <div class="statistics-filter">
 
 
+            <!-- TỪ NGÀY -->
+
             <div class="statistics-filter-item">
 
                 <label for="tuNgay">
@@ -219,6 +196,8 @@
             </div>
 
 
+
+            <!-- ĐẾN NGÀY -->
 
             <div class="statistics-filter-item">
 
@@ -235,7 +214,11 @@
 
 
 
+            <!-- BUTTON -->
+
             <div class="statistics-filter-button">
+
+                <!-- TRA CỨU -->
 
                 <button type="button"
                         id="btnTraCuu"
@@ -244,6 +227,17 @@
                     🔍 Tra cứu
 
                 </button>
+
+
+                <!-- XUẤT EXCEL -->
+
+                <a href="#"
+                   id="btnExportExcel"
+                   class="btn btn-success">
+
+                    📊 Xuất Excel
+
+                </a>
 
             </div>
 
@@ -283,27 +277,45 @@
         let myChart = null;
 
 
+        // =====================================
+        // VẼ BIỂU ĐỒ
+        // =====================================
+
         function drawChart(data) {
 
-            console.log("DATA NHẬN ĐƯỢC:", data);
-
-
-            const labels = data.map(item =>
-                item.bookTitle ?? item.BookTitle
+            console.log(
+                "DATA NHẬN ĐƯỢC:",
+                data
             );
 
 
-            const values = data.map(item =>
-                item.soLuongMuon ?? item.SoLuongMuon
+            const labels =
+                data.map(item =>
+                    item.bookTitle ?? item.BookTitle
+                );
+
+
+            const values =
+                data.map(item =>
+                    item.soLuongMuon ?? item.SoLuongMuon
+                );
+
+
+            console.log(
+                "LABELS:",
+                labels
             );
 
-
-            console.log("LABELS:", labels);
-            console.log("VALUES:", values);
+            console.log(
+                "VALUES:",
+                values
+            );
 
 
             const canvas =
-                document.getElementById("myChart");
+                document.getElementById(
+                    "myChart"
+                );
 
 
             if (!canvas) {
@@ -316,7 +328,8 @@
             }
 
 
-            // Xóa biểu đồ cũ
+            // XÓA BIỂU ĐỒ CŨ
+
             if (myChart !== null) {
 
                 myChart.destroy();
@@ -324,147 +337,262 @@
             }
 
 
-            myChart = new Chart(canvas, {
+            // TẠO BIỂU ĐỒ MỚI
 
-                type: "bar",
+            myChart =
+                new Chart(
+                    canvas,
+                    {
 
-                data: {
+                        type: "bar",
 
-                    labels: labels,
+                        data: {
 
-                    datasets: [{
+                            labels: labels,
 
-                        label:
-                            "Số lượng sách được mượn",
+                            datasets: [{
 
-                        data: values,
+                                label:
+                                    "Số lượng sách được mượn",
 
-                        borderWidth: 1
+                                data: values,
 
-                    }]
+                                borderWidth: 1
 
-                },
+                            }]
 
-                options: {
+                        },
 
-                    responsive: true,
+                        options: {
 
-                    maintainAspectRatio: false,
+                            responsive: true,
 
-                    scales: {
+                            maintainAspectRatio: false,
 
-                        y: {
+                            scales: {
 
-                            beginAtZero: true,
+                                y: {
 
-                            ticks: {
+                                    beginAtZero: true,
 
-                                precision: 0
+                                    ticks: {
+
+                                        precision: 0
+
+                                    }
+
+                                }
 
                             }
 
                         }
 
                     }
-
-                }
-
-            });
+                );
 
         }
 
 
 
+        // =====================================
+        // DOCUMENT READY
+        // =====================================
+
         $(document).ready(function() {
 
 
-            // =====================================
+            // =================================
             // TRA CỨU
-            // =====================================
+            // =================================
 
-            $("#btnTraCuu").on("click", function() {
-
-                const tuNgay =
-                    $("#tuNgay").val();
-
-                const denNgay =
-                    $("#denNgay").val();
+            $("#btnTraCuu").on(
+                "click",
+                function() {
 
 
-                console.log("Từ ngày:", tuNgay);
+                    const tuNgay =
+                        $("#tuNgay").val();
 
-                console.log("Đến ngày:", denNgay);
+
+                    const denNgay =
+                        $("#denNgay").val();
 
 
-                if (!tuNgay || !denNgay) {
-
-                    alert(
-                        "Vui lòng chọn đầy đủ ngày."
+                    console.log(
+                        "Từ ngày:",
+                        tuNgay
                     );
 
-                    return;
-                }
 
-
-                if (tuNgay > denNgay) {
-
-                    alert(
-                        "Từ ngày không được lớn hơn đến ngày."
+                    console.log(
+                        "Đến ngày:",
+                        denNgay
                     );
 
-                    return;
-                }
 
+                    // KIỂM TRA NGÀY
 
-                $.ajax({
-
-                    url:
-                        "/Statistics/GetBorrowedBooksChart",
-
-                    type: "GET",
-
-                    data: {
-
-                        TuNgay: tuNgay,
-
-                        DenNgay: denNgay
-
-                    },
-
-
-                    success: function(data) {
-
-                        console.log(
-                            "API TRẢ VỀ:",
-                            data
-                        );
-
-
-                        drawChart(data);
-
-                    },
-
-
-                    error: function(xhr) {
-
-                        console.error(
-                            "API ERROR:",
-                            xhr.status,
-                            xhr.responseText
-                        );
-
+                    if (!tuNgay ||
+                        !denNgay) {
 
                         alert(
-                            "Không tải được dữ liệu biểu đồ."
+                            "Vui lòng chọn đầy đủ ngày."
                         );
 
+                        return;
                     }
 
-                });
 
-            });
+                    // KIỂM TRA KHOẢNG NGÀY
+
+                    if (tuNgay > denNgay) {
+
+                        alert(
+                            "Từ ngày không được lớn hơn đến ngày."
+                        );
+
+                        return;
+                    }
+
+
+                    // AJAX
+
+                    $.ajax({
+
+                        url:
+                            "/Statistics/GetBorrowedBooksChart",
+
+                        type:
+                            "GET",
+
+                        data: {
+
+                            TuNgay:
+                                tuNgay,
+
+                            DenNgay:
+                                denNgay
+
+                        },
+
+
+                        success:
+                            function(data) {
+
+                                console.log(
+                                    "API TRẢ VỀ:",
+                                    data
+                                );
+
+
+                                drawChart(
+                                    data
+                                );
+
+                            },
+
+
+                        error:
+                            function(xhr) {
+
+                                console.error(
+                                    "API ERROR:",
+                                    xhr.status,
+                                    xhr.responseText
+                                );
+
+
+                                alert(
+                                    "Không tải được dữ liệu biểu đồ."
+                                );
+
+                            }
+
+                    });
+
+                }
+            );
+
+
+
+            // =================================
+            // XUẤT EXCEL
+            // =================================
+
+            $("#btnExportExcel").on(
+                "click",
+                function(e) {
+
+                    e.preventDefault();
+
+
+                    // LẤY NGÀY ĐANG CHỌN
+
+                    const tuNgay =
+                        $("#tuNgay").val();
+
+
+                    const denNgay =
+                        $("#denNgay").val();
+
+
+                    // KIỂM TRA
+
+                    if (!tuNgay ||
+                        !denNgay) {
+
+                        alert(
+                            "Vui lòng chọn đầy đủ ngày trước khi xuất báo cáo."
+                        );
+
+                        return;
+                    }
+
+
+                    // KIỂM TRA KHOẢNG NGÀY
+
+                    if (tuNgay > denNgay) {
+
+                        alert(
+                            "Từ ngày không được lớn hơn đến ngày."
+                        );
+
+                        return;
+                    }
+
+
+                    console.log(
+                        "Xuất Excel:",
+                        tuNgay,
+                        denNgay
+                    );
+
+
+                    // TẠO URL
+
+                    const url =
+                        "/Statistics/ExportExcel"
+                        + "?TuNgay="
+                        + encodeURIComponent(
+                            tuNgay
+                        )
+                        + "&DenNgay="
+                        + encodeURIComponent(
+                            denNgay
+                        );
+
+
+                    // TẢI FILE
+
+                    window.location.href =
+                        url;
+
+                }
+            );
+
 
         });
 
     </script>
+
 }

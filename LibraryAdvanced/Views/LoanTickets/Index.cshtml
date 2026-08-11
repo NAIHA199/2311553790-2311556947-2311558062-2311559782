@@ -298,7 +298,7 @@
 
                             <td>
 
-                                @if (role == "Admin")
+                                @if (role == "Admin" && item.Status == "Borrowed")
                                 {
                                     <a asp-controller="LoanTickets"
                                        asp-action="Print"

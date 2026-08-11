@@ -1,0 +1,1132 @@
+﻿@{
+    Layout = null;
+    ViewData["Title"] = "Library - Thư viện";
+}
+
+<!DOCTYPE html>
+
+<html lang="vi">
+
+<head>
+
+    <meta charset="utf-8" />
+
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0" />
+
+    <title>
+        Library - Thư viện
+    </title>
+
+
+    <!-- GOOGLE FONT -->
+
+    <link rel="preconnect"
+          href="https://fonts.googleapis.com" />
+
+    <link rel="preconnect"
+          href="https://fonts.gstatic.com"
+          crossorigin />
+
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap"
+          rel="stylesheet" />
+
+
+    <style>
+
+            * {
+                box-sizing: border-box;
+                margin: 0;
+                padding: 0;
+            }
+
+
+            html {
+                scroll-behavior: smooth;
+            }
+
+
+            body {
+                font-family: "Inter", sans-serif;
+                background: #f8fafc;
+                color: #172033;
+            }
+
+
+            a {
+                text-decoration: none;
+            }
+
+
+            /* =========================================
+                       NAVBAR
+                    ========================================= */
+
+            .landing-navbar {
+                height: 76px;
+                background: #ffffff;
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+                padding: 0 7%;
+                border-bottom: 1px solid #edf0f5;
+                position: sticky;
+                top: 0;
+                z-index: 1000;
+            }
+
+
+            .landing-logo {
+                display: flex;
+                align-items: center;
+                gap: 12px;
+            }
+
+
+            .logo-icon {
+                width: 44px;
+                height: 44px;
+                background: #2563eb;
+                border-radius: 12px;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                font-size: 23px;
+            }
+
+
+            .logo-content strong {
+                display: block;
+                font-size: 18px;
+                font-weight: 800;
+                letter-spacing: 1px;
+                color: #172033;
+            }
+
+
+            .logo-content span {
+                display: block;
+                font-size: 10px;
+                color: #8a94a6;
+                margin-top: 2px;
+                letter-spacing: .5px;
+            }
+
+
+            .landing-menu {
+                display: flex;
+                align-items: center;
+                gap: 32px;
+            }
+
+
+                .landing-menu a {
+                    color: #596579;
+                    font-size: 14px;
+                    font-weight: 500;
+                    transition: .2s;
+                }
+
+
+                    .landing-menu a:hover {
+                        color: #2563eb;
+                    }
+
+
+            .landing-actions {
+                display: flex;
+                align-items: center;
+                gap: 10px;
+            }
+
+
+            .btn-login {
+                padding: 10px 20px;
+                border-radius: 9px;
+                color: #2563eb;
+                border: 1px solid #2563eb;
+                font-size: 14px;
+                font-weight: 600;
+                transition: .2s;
+            }
+
+
+                .btn-login:hover {
+                    background: #eff6ff;
+                }
+
+
+            .btn-register {
+                padding: 10px 20px;
+                border-radius: 9px;
+                background: #2563eb;
+                color: white;
+                font-size: 14px;
+                font-weight: 600;
+                transition: .2s;
+            }
+
+
+                .btn-register:hover {
+                    background: #1d4ed8;
+                    color: white;
+                }
+
+
+            /* =========================================
+                       HERO
+                    ========================================= */
+
+            .hero {
+                min-height: 570px;
+                display: flex;
+                align-items: center;
+                padding: 70px 7%;
+                background: linear-gradient( 135deg, #eff6ff 0%, #ffffff 55%, #f8fafc 100% );
+            }
+
+
+            .hero-container {
+                width: 100%;
+                max-width: 1200px;
+                margin: auto;
+                display: grid;
+                grid-template-columns: 1.05fr .95fr;
+                gap: 70px;
+                align-items: center;
+            }
+
+
+            .hero-label {
+                display: inline-flex;
+                align-items: center;
+                gap: 7px;
+                padding: 7px 13px;
+                background: #dbeafe;
+                color: #2563eb;
+                border-radius: 20px;
+                font-size: 12px;
+                font-weight: 700;
+                margin-bottom: 20px;
+            }
+
+
+            .hero h1 {
+                font-size: 52px;
+                line-height: 1.12;
+                letter-spacing: -1.5px;
+                margin-bottom: 20px;
+                color: #172033;
+            }
+
+
+                .hero h1 span {
+                    color: #2563eb;
+                }
+
+
+            .hero-description {
+                color: #667085;
+                font-size: 16px;
+                line-height: 1.8;
+                max-width: 560px;
+                margin-bottom: 30px;
+            }
+
+
+            .hero-buttons {
+                display: flex;
+                align-items: center;
+                gap: 13px;
+            }
+
+
+            .hero-primary {
+                display: inline-flex;
+                align-items: center;
+                justify-content: center;
+                padding: 13px 24px;
+                border-radius: 10px;
+                background: #2563eb;
+                color: white;
+                font-size: 14px;
+                font-weight: 600;
+                transition: .2s;
+            }
+
+
+                .hero-primary:hover {
+                    background: #1d4ed8;
+                    color: white;
+                    transform: translateY(-1px);
+                }
+
+
+            .hero-secondary {
+                display: inline-flex;
+                align-items: center;
+                justify-content: center;
+                padding: 13px 24px;
+                border-radius: 10px;
+                background: white;
+                color: #344054;
+                border: 1px solid #d8dee8;
+                font-size: 14px;
+                font-weight: 600;
+                transition: .2s;
+            }
+
+
+                .hero-secondary:hover {
+                    border-color: #2563eb;
+                    color: #2563eb;
+                }
+
+
+            /* =========================================
+                       BOOK ILLUSTRATION
+                    ========================================= */
+
+            .hero-visual {
+                display: flex;
+                justify-content: center;
+                align-items: center;
+                min-height: 390px;
+            }
+
+
+            .book-scene {
+                position: relative;
+                width: 370px;
+                height: 350px;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+            }
+
+
+            .book-circle {
+                width: 320px;
+                height: 320px;
+                border-radius: 50%;
+                background: #dbeafe;
+                position: absolute;
+            }
+
+
+            .book-stack {
+                position: relative;
+                z-index: 2;
+                width: 220px;
+                height: 250px;
+            }
+
+
+            .book {
+                position: absolute;
+                width: 180px;
+                height: 52px;
+                border-radius: 7px;
+                box-shadow: 0 8px 18px rgba(15, 23, 42, .12);
+            }
+
+
+            .book-1 {
+                background: #2563eb;
+                transform: rotate(-10deg) translate(-5px, 80px);
+            }
+
+
+            .book-2 {
+                background: #60a5fa;
+                transform: rotate(7deg) translate(5px, 40px);
+            }
+
+
+            .book-3 {
+                background: #172033;
+                transform: rotate(-4deg) translate(0, 0);
+            }
+
+
+            .book-page {
+                position: absolute;
+                width: 125px;
+                height: 170px;
+                background: white;
+                border-radius: 5px;
+                top: -140px;
+                left: 27px;
+                transform: rotate(2deg);
+                box-shadow: 0 12px 30px rgba(15, 23, 42, .15);
+                padding: 20px;
+            }
+
+
+            .book-page-line {
+                height: 6px;
+                background: #dbe3ef;
+                border-radius: 4px;
+                margin-bottom: 12px;
+            }
+
+
+                .book-page-line.short {
+                    width: 65%;
+                }
+
+
+            .floating-book {
+                position: absolute;
+                font-size: 42px;
+                z-index: 5;
+                animation: floatBook 3s ease-in-out infinite;
+            }
+
+
+                .floating-book.one {
+                    top: 25px;
+                    right: 5px;
+                }
+
+
+                .floating-book.two {
+                    bottom: 35px;
+                    left: 5px;
+                    font-size: 34px;
+                    animation-delay: .8s;
+                }
+
+
+            @@keyframes floatBook {
+
+                0%, 100% {
+                    transform: translateY(0);
+                }
+
+                50% {
+                    transform: translateY(-10px);
+                }
+            }
+
+
+            /* =========================================
+                       STATS
+                    ========================================= */
+
+            .stats-section {
+                background: white;
+                border-top: 1px solid #edf0f5;
+                border-bottom: 1px solid #edf0f5;
+                padding: 30px 7%;
+            }
+
+
+            .stats-container {
+                max-width: 1100px;
+                margin: auto;
+                display: grid;
+                grid-template-columns: repeat(3, 1fr);
+                gap: 20px;
+            }
+
+
+            .stat-item {
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                gap: 14px;
+                padding: 15px;
+            }
+
+
+            .stat-icon {
+                width: 46px;
+                height: 46px;
+                border-radius: 12px;
+                background: #eff6ff;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                font-size: 21px;
+            }
+
+
+            .stat-item strong {
+                display: block;
+                font-size: 21px;
+                color: #172033;
+            }
+
+
+            .stat-item span {
+                color: #8a94a6;
+                font-size: 12px;
+            }
+
+
+            /* =========================================
+                       FEATURES
+                    ========================================= */
+
+            .features {
+                padding: 85px 7%;
+                background: #f8fafc;
+            }
+
+
+            .section-header {
+                text-align: center;
+                max-width: 650px;
+                margin: 0 auto 45px;
+            }
+
+
+                .section-header span {
+                    color: #2563eb;
+                    font-size: 12px;
+                    font-weight: 700;
+                    letter-spacing: 1px;
+                    text-transform: uppercase;
+                }
+
+
+                .section-header h2 {
+                    font-size: 32px;
+                    margin: 10px 0 12px;
+                }
+
+
+                .section-header p {
+                    color: #667085;
+                    font-size: 14px;
+                    line-height: 1.7;
+                }
+
+
+            .feature-grid {
+                max-width: 1100px;
+                margin: auto;
+                display: grid;
+                grid-template-columns: repeat(3, 1fr);
+                gap: 22px;
+            }
+
+
+            .feature-card {
+                background: white;
+                border: 1px solid #edf0f5;
+                border-radius: 16px;
+                padding: 28px;
+                transition: .25s;
+            }
+
+
+                .feature-card:hover {
+                    transform: translateY(-5px);
+                    box-shadow: 0 15px 35px rgba(15, 23, 42, .08);
+                }
+
+
+            .feature-icon {
+                width: 52px;
+                height: 52px;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                border-radius: 13px;
+                background: #eff6ff;
+                font-size: 24px;
+                margin-bottom: 18px;
+            }
+
+
+            .feature-card h3 {
+                font-size: 17px;
+                margin-bottom: 9px;
+            }
+
+
+            .feature-card p {
+                color: #667085;
+                font-size: 13px;
+                line-height: 1.7;
+            }
+
+
+            /* =========================================
+                       CTA
+                    ========================================= */
+
+            .cta {
+                padding: 70px 7%;
+                background: #172033;
+            }
+
+
+            .cta-container {
+                max-width: 900px;
+                margin: auto;
+                text-align: center;
+                color: white;
+            }
+
+
+                .cta-container h2 {
+                    font-size: 32px;
+                    margin-bottom: 12px;
+                }
+
+
+                .cta-container p {
+                    color: #aeb8c7;
+                    font-size: 14px;
+                    margin-bottom: 25px;
+                }
+
+
+            /* =========================================
+                       FOOTER
+                    ========================================= */
+
+            .footer {
+                background: #101827;
+                color: #98a2b3;
+                padding: 25px 7%;
+                text-align: center;
+                font-size: 12px;
+            }
+
+
+            /* =========================================
+                       RESPONSIVE
+                    ========================================= */
+
+            @@media (max-width: 900px) {
+
+                .landing-menu {
+                    display: none;
+                }
+
+                .hero-container {
+                    grid-template-columns: 1fr;
+                    text-align: center;
+                }
+
+                .hero-description {
+                    margin-left: auto;
+                    margin-right: auto;
+                }
+
+                .hero-buttons {
+                    justify-content: center;
+                }
+
+                .stats-container {
+                    grid-template-columns: 1fr;
+                }
+
+                .feature-grid {
+                    grid-template-columns: 1fr;
+                }
+
+                .hero h1 {
+                    font-size: 40px;
+                }
+            }
+
+
+            @@media (max-width: 550px) {
+
+                .landing-navbar {
+                    padding: 0 20px;
+                }
+
+                .landing-actions .btn-login {
+                    display: none;
+                }
+
+                .hero {
+                    padding: 55px 20px;
+                }
+
+                    .hero h1 {
+                        font-size: 34px;
+                    }
+
+                .hero-visual {
+                    transform: scale(.8);
+                }
+
+                .features {
+                    padding: 60px 20px;
+                }
+
+                .cta {
+                    padding: 55px 20px;
+                }
+            }
+
+    </style>
+
+</head>
+
+
+<body>
+
+
+    <!-- =========================================
+         NAVBAR
+    ========================================== -->
+
+    <header class="landing-navbar">
+
+
+        <!-- LOGO -->
+
+        <a asp-controller="Home"
+           asp-action="Landing"
+           class="landing-logo">
+
+            <div class="logo-icon">
+                📚
+            </div>
+
+            <div class="logo-content">
+
+                <strong>
+                    LIBRARY
+                </strong>
+
+                <span>
+                    LIBRARY MANAGEMENT
+                </span>
+
+            </div>
+
+        </a>
+
+
+        <!-- MENU -->
+
+        <nav class="landing-menu">
+
+            <a href="#home">
+                Trang chủ
+            </a>
+
+            <a href="#gioi-thieu">
+                Giới thiệu
+            </a>
+
+            <a href="#tinh-nang">
+                Tính năng
+            </a>
+
+            <a href="#lien-he">
+                Liên hệ
+            </a>
+
+        </nav>
+
+
+        <!-- ACTION -->
+
+        <div class="landing-actions">
+
+            <a asp-controller="Account"
+               asp-action="Login"
+               class="btn-login">
+
+                Đăng nhập
+
+            </a>
+
+
+            <a asp-controller="Account"
+               asp-action="Register"
+               class="btn-register">
+
+                Đăng ký
+
+            </a>
+
+        </div>
+
+
+    </header>
+
+
+
+    <!-- =========================================
+         HERO
+    ========================================== -->
+
+    <section class="hero"
+             id="home">
+
+
+        <div class="hero-container">
+
+
+            <!-- LEFT -->
+
+            <div class="hero-content">
+
+
+                <div class="hero-label">
+
+                    📚 THƯ VIỆN TRỰC TUYẾN
+
+                </div>
+
+
+                <h1>
+
+                    Khám phá thế giới
+                    <span>
+                        tri thức
+                    </span>
+
+                </h1>
+
+
+                <p class="hero-description">
+
+                    Quản lý, tìm kiếm và khám phá
+                    hàng ngàn đầu sách một cách dễ dàng.
+                    Library giúp bạn kết nối với kho tri thức
+                    và quản lý việc mượn sách thuận tiện hơn.
+
+                </p>
+
+
+                <div class="hero-buttons">
+
+
+                    <a asp-controller="Account"
+                       asp-action="Register"
+                       class="hero-primary">
+
+                        Bắt đầu ngay
+                        &nbsp; →
+
+                    </a>
+
+
+                    <a asp-controller="Account"
+                       asp-action="Login"
+                       class="hero-secondary">
+
+                        Tôi đã có tài khoản
+
+                    </a>
+
+
+                </div>
+
+
+            </div>
+
+
+
+            <!-- RIGHT -->
+
+            <div class="hero-visual">
+
+
+                <div class="book-scene">
+
+
+                    <div class="book-circle">
+                    </div>
+
+
+                    <div class="floating-book one">
+                        📖
+                    </div>
+
+
+                    <div class="floating-book two">
+                        📚
+                    </div>
+
+
+                    <div class="book-stack">
+
+
+                        <div class="book book-1">
+                        </div>
+
+
+                        <div class="book book-2">
+                        </div>
+
+
+                        <div class="book book-3">
+
+
+                            <div class="book-page">
+
+                                <div class="book-page-line">
+                                </div>
+
+                                <div class="book-page-line">
+                                </div>
+
+                                <div class="book-page-line short">
+                                </div>
+
+                                <div class="book-page-line">
+                                </div>
+
+                            </div>
+
+
+                        </div>
+
+
+                    </div>
+
+                </div>
+
+            </div>
+
+
+        </div>
+
+    </section>
+
+
+
+    <!-- =========================================
+         STATS
+    ========================================== -->
+
+    <section class="stats-section">
+
+        <div class="stats-container">
+
+
+            <div class="stat-item">
+
+                <div class="stat-icon">
+                    📚
+                </div>
+
+                <div>
+
+                    <strong>
+                        1,000+
+                    </strong>
+
+                    <span>
+                        Đầu sách
+                    </span>
+
+                </div>
+
+            </div>
+
+
+            <div class="stat-item">
+
+                <div class="stat-icon">
+                    👥
+                </div>
+
+                <div>
+
+                    <strong>
+                        500+
+                    </strong>
+
+                    <span>
+                        Độc giả
+                    </span>
+
+                </div>
+
+            </div>
+
+
+            <div class="stat-item">
+
+                <div class="stat-icon">
+                    📖
+                </div>
+
+                <div>
+
+                    <strong>
+                        100+
+                    </strong>
+
+                    <span>
+                        Sách đang được mượn
+                    </span>
+
+                </div>
+
+            </div>
+
+
+        </div>
+
+    </section>
+
+
+
+    <!-- =========================================
+         GIỚI THIỆU
+    ========================================== -->
+
+    <section class="features"
+             id="gioi-thieu">
+
+
+        <div class="section-header">
+
+            <span>
+                VỀ LIBRARY
+            </span>
+
+            <h2>
+                Mọi thứ bạn cần cho thư viện
+            </h2>
+
+            <p>
+                Hệ thống được thiết kế để giúp độc giả
+                tìm kiếm sách nhanh chóng và giúp thư viện
+                quản lý sách, độc giả và hoạt động mượn trả
+                hiệu quả hơn.
+            </p>
+
+        </div>
+
+
+
+        <div class="feature-grid"
+             id="tinh-nang">
+
+
+            <!-- FEATURE 1 -->
+
+            <div class="feature-card">
+
+                <div class="feature-icon">
+                    🔍
+                </div>
+
+                <h3>
+                    Tìm kiếm sách
+                </h3>
+
+                <p>
+                    Tìm kiếm sách theo tên, tác giả
+                    và danh mục một cách nhanh chóng.
+                </p>
+
+            </div>
+
+
+            <!-- FEATURE 2 -->
+
+            <div class="feature-card">
+
+                <div class="feature-icon">
+                    📖
+                </div>
+
+                <h3>
+                    Quản lý mượn sách
+                </h3>
+
+                <p>
+                    Theo dõi sách đang mượn,
+                    lịch sử mượn và tình trạng trả sách.
+                </p>
+
+            </div>
+
+
+            <!-- FEATURE 3 -->
+
+            <div class="feature-card">
+
+                <div class="feature-icon">
+                    📊
+                </div>
+
+                <h3>
+                    Thống kê thư viện
+                </h3>
+
+                <p>
+                    Quản trị viên có thể theo dõi
+                    hoạt động thư viện thông qua dashboard
+                    và báo cáo thống kê.
+                </p>
+
+            </div>
+
+
+        </div>
+
+    </section>
+
+
+
+    <!-- =========================================
+         CTA
+    ========================================== -->
+
+    <section class="cta"
+             id="lien-he">
+
+
+        <div class="cta-container">
+
+
+            <h2>
+                Sẵn sàng khám phá thư viện?
+            </h2>
+
+
+            <p>
+                Tạo tài khoản và bắt đầu khám phá
+                những cuốn sách yêu thích của bạn.
+            </p>
+
+
+            <a asp-controller="Account"
+               asp-action="Register"
+               class="hero-primary">
+
+                Đăng ký ngay
+                &nbsp; →
+
+            </a>
+
+
+        </div>
+
+
+    </section>
+
+
+
+    <!-- =========================================
+         FOOTER
+    ========================================== -->
+
+    <footer class="footer">
+
+        © 2026 - Library Management System
+
+    </footer>
+
+
+</body>
+
+</html>
