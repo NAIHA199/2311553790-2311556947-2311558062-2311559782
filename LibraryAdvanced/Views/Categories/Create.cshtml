@@ -1,0 +1,84 @@
+﻿@model LibraryAdvanced.Models.Category
+
+@{
+    ViewData["Title"] = "Thêm danh mục";
+}
+
+<div class="admin-book-header">
+
+    <span class="page-label">
+        QUẢN TRỊ
+    </span>
+
+    <h1>
+        Thêm danh mục
+    </h1>
+
+    <p>
+        Thêm thể loại sách mới vào thư viện.
+    </p>
+
+</div>
+
+
+<div class="admin-book-card">
+
+    <form asp-action="Create"
+          method="post">
+
+        @Html.AntiForgeryToken()
+
+
+        <div asp-validation-summary="ModelOnly"
+             class="text-danger mb-3">
+        </div>
+
+
+        <div class="admin-form-group">
+
+            <label asp-for="Name">
+                Tên danh mục
+            </label>
+
+            <input asp-for="Name"
+                   class="form-control"
+                   placeholder="Ví dụ: Tiểu thuyết..." />
+
+            <span asp-validation-for="Name"
+                  class="text-danger">
+            </span>
+
+        </div>
+
+
+        <div class="admin-form-actions">
+
+            <a asp-action="Index"
+               class="admin-cancel">
+
+                Hủy
+
+            </a>
+
+            <button type="submit"
+                    class="btn btn-primary">
+
+                + Thêm danh mục
+
+            </button>
+
+        </div>
+
+    </form>
+
+</div>
+
+
+@section Scripts {
+
+    @{
+        await Html.RenderPartialAsync(
+            "_ValidationScriptsPartial");
+    }
+
+}

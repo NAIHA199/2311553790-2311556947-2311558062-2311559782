@@ -1,0 +1,175 @@
+﻿@model IEnumerable<LibraryAdvanced.Models.Category>
+
+@{
+    ViewData["Title"] = "Quản lý danh mục";
+
+    string? search = ViewBag.Search;
+}
+
+<div class="admin-book-header">
+
+    <span class="page-label">
+        QUẢN TRỊ
+    </span>
+
+    <h1>
+        Quản lý danh mục
+    </h1>
+
+    <p>
+        Quản lý các thể loại sách trong thư viện.
+    </p>
+
+</div>
+
+
+<!-- THÔNG BÁO -->
+@if (TempData["Success"] != null)
+{
+    <div class="alert alert-success">
+        ✅ @TempData["Success"]
+    </div>
+}
+
+@if (TempData["Error"] != null)
+{
+    <div class="alert alert-danger">
+        ⚠️ @TempData["Error"]
+    </div>
+}
+
+
+<!-- SEARCH + ADD -->
+
+<div class="d-flex justify-content-between
+    align-items-center mb-4">
+
+    <form asp-action="Index"
+          method="get"
+          class="d-flex gap-2">
+
+        <input type="text"
+               name="search"
+               value="@search"
+               class="form-control"
+               placeholder="Tìm tên danh mục..." />
+
+        <button type="submit"
+                class="btn btn-primary">
+
+            🔍 Tìm kiếm
+
+        </button>
+
+    </form>
+
+
+    <a asp-action="Create"
+       class="btn btn-success">
+
+        + Thêm danh mục
+
+    </a>
+
+</div>
+
+
+<!-- DANH SÁCH -->
+
+<div class="card">
+
+    <div class="card-body p-0">
+
+        <table class="table table-hover mb-0">
+
+            <thead class="table-dark">
+
+                <tr>
+
+                    <th style="width: 80px;">
+                        #
+                    </th>
+
+                    <th>
+                        Tên danh mục
+                    </th>
+
+                    <th>
+                        Số lượng sách
+                    </th>
+
+                    <th style="width: 230px;">
+                        Thao tác
+                    </th>
+
+                </tr>
+
+            </thead>
+
+
+            <tbody>
+
+                @{
+                    int index = 1;
+                }
+
+                @foreach (var category in Model)
+                {
+                    <tr>
+
+                        <td>
+                            @(index++)
+                        </td>
+
+
+                        <td>
+
+                            <strong>
+                                @category.Name
+                            </strong>
+
+                        </td>
+
+
+                        <td>
+
+                            <span class="badge bg-primary">
+
+                                @category.Books.Count sách
+
+                            </span>
+
+                        </td>
+
+
+                        <td>
+
+                            <a asp-action="Edit"
+                               asp-route-id="@category.Id"
+                               class="btn btn-sm btn-warning">
+
+                                ✏️ Sửa
+
+                            </a>
+
+
+                            <a asp-action="Delete"
+                               asp-route-id="@category.Id"
+                               class="btn btn-sm btn-danger">
+
+                                🗑️ Xóa
+
+                            </a>
+
+                        </td>
+
+                    </tr>
+                }
+
+            </tbody>
+
+        </table>
+
+    </div>
+
+</div>
