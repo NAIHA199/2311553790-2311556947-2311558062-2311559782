@@ -1,0 +1,22 @@
+﻿@model int
+
+<a asp-controller="Notifications"
+   asp-action="Index"
+   class="sidebar-link notification-link">
+
+    <span class="sidebar-icon">
+        🔔
+    </span>
+
+    <span>
+        Thông báo
+    </span>
+
+    @if (Model > 0)
+    {
+        <span class="notification-badge">
+            @(Model > 99 ? "99+" : Model)
+        </span>
+    }
+
+</a>

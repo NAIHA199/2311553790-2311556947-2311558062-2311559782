@@ -10,6 +10,11 @@ public partial class LoanTicket
     public string BorrowerName { get; set; } = null!;
 
     public DateTime? BorrowDate { get; set; }
+    // Hạn trả sách
+    public DateTime? DueDate { get; set; }
+
+    // Ngày thực tế trả sách
+    public DateTime? ReturnedDate { get; set; }
 
     public string? Status { get; set; }
 

@@ -6,12 +6,16 @@
     ViewData["Title"] = "Danh Sách Phiếu Mượn";
 
     var role = Context.Session.GetString("Role");
+
+    var today = DateTime.Now.Date;
 }
 
 
 <div class="container-fluid">
 
-    <!-- HEADER -->
+    <!-- =========================================
+         HEADER
+    ========================================== -->
 
     <div class="d-flex justify-content-between align-items-center mb-4">
 
@@ -35,8 +39,9 @@
     </div>
 
 
-
-    <!-- FORM TÌM KIẾM + LỌC -->
+    <!-- =========================================
+         FORM TÌM KIẾM + LỌC
+    ========================================== -->
 
     <form method="get"
           asp-controller="LoanTickets"
@@ -107,8 +112,9 @@
     </form>
 
 
-
-    <!-- THÔNG BÁO -->
+    <!-- =========================================
+         THÔNG BÁO
+    ========================================== -->
     @if (TempData["Success"] != null)
     {
         <div class="alert alert-success">
@@ -129,8 +135,9 @@
     }
 
 
-
-    <!-- TABLE -->
+    <!-- =========================================
+         TABLE
+    ========================================== -->
 
     <div class="loan-table-wrapper">
 
@@ -152,19 +159,23 @@
                         Ngày Mượn
                     </th>
 
+                    <!-- ⭐ THÊM HẠN TRẢ -->
+
+                    <th style="width: 140px;">
+                        Hạn Trả
+                    </th>
+
                     <th style="min-width: 250px;">
                         Sách Mượn
                     </th>
 
-                    <th style="width: 100px;">
+                    <th style="width: 140px;">
                         Trạng Thái
                     </th>
 
                     <th style="width: 70px;">
                         Tổng
                     </th>
-
-                    <!-- THÊM CỘT IN PHIẾU -->
 
                     <th style="width: 130px;">
                         Thao tác
@@ -181,11 +192,48 @@
                 {
                     @foreach (var item in Model)
                     {
+                        /*
+                         * =====================================
+                         * XÁC ĐỊNH QUÁ HẠN
+                         * =====================================
+                         */
+
+                        bool isReturned =
+                            item.Status == "Returned";
+
+                        bool isOverdue =
+                            !isReturned
+                            && item.DueDate.HasValue
+                            && today > item.DueDate.Value.Date;
+
+                        int overdueDays = 0;
+
+                        if (isOverdue)
+                        {
+                            overdueDays =
+                                (today - item.DueDate!.Value.Date).Days;
+                        }
+
+
+                        /*
+                         * SẮP ĐẾN HẠN
+                         * Còn 1 ngày
+                         */
+
+                        bool isDueSoon =
+                            !isReturned
+                            && !isOverdue
+                            && item.DueDate.HasValue
+                            && (item.DueDate.Value.Date - today).Days <= 1;
+
+
                         <tr class="loan-row"
                             data-loan-id="@item.Id">
 
 
-                            <!-- MÃ PHIẾU -->
+                            <!-- =====================================
+                                 MÃ PHIẾU
+                            ====================================== -->
 
                             <td>
 
@@ -196,7 +244,9 @@
                             </td>
 
 
-                            <!-- NGƯỜI MƯỢN -->
+                            <!-- =====================================
+                                 NGƯỜI MƯỢN
+                            ====================================== -->
 
                             <td>
 
@@ -205,7 +255,9 @@
                             </td>
 
 
-                            <!-- NGÀY MƯỢN -->
+                            <!-- =====================================
+                                 NGÀY MƯỢN
+                            ====================================== -->
 
                             <td>
 
@@ -214,7 +266,64 @@
                             </td>
 
 
-                            <!-- SÁCH MƯỢN -->
+                            <!-- =====================================
+                                 HẠN TRẢ
+                            ====================================== -->
+
+                            <td>
+
+                                @if (item.DueDate.HasValue)
+                                {
+                                    if (isOverdue)
+                                    {
+                                        <div class="due-date overdue">
+
+                                            <strong>
+                                                @item.DueDate.Value.ToString("dd/MM/yyyy")
+                                            </strong>
+
+                                            <small>
+                                                🔴 Quá hạn @overdueDays ngày
+                                            </small>
+
+                                        </div>
+                                    }
+                                    else if (isDueSoon)
+                                    {
+                                        <div class="due-date due-soon">
+
+                                            <strong>
+                                                @item.DueDate.Value.ToString("dd/MM/yyyy")
+                                            </strong>
+
+                                            <small>
+                                                🟡 Sắp đến hạn
+                                            </small>
+
+                                        </div>
+                                    }
+                                    else
+                                    {
+                                        <div class="due-date">
+
+                                            @item.DueDate.Value.ToString("dd/MM/yyyy")
+
+                                        </div>
+                                    }
+                                }
+                                else
+                                {
+                                    <span class="text-muted">
+                                        Chưa có
+                                    </span>
+                                }
+
+                            </td>
+
+
+                            <!-- =====================================
+                                 SÁCH MƯỢN
+                            ====================================== -->
 
                             <td>
 
@@ -248,7 +357,9 @@
                                             📖 @detail.BookTitle
 
                                             <span class="quantity">
+
                                                 × @detail.Quantity
+
                                             </span>
 
                                         </div>
@@ -259,23 +370,41 @@
                             </td>
 
 
-                            <!-- TRẠNG THÁI -->
+                            <!-- =====================================
+                                 TRẠNG THÁI
+                            ====================================== -->
 
                             <td>
 
-                                @if (item.Status == "Borrowed")
+                                @if (isReturned)
+                                {
+                                    <span class="badge bg-success">
+
+                                        🟢 Đã trả
+
+                                    </span>
+                                }
+                                else if (isOverdue)
+                                {
+                                    <span class="badge bg-danger">
+
+                                        🔴 Quá hạn
+
+                                    </span>
+                                }
+                                else if (isDueSoon)
                                 {
                                     <span class="badge bg-warning text-dark">
 
-                                        Borrowed
+                                        🟡 Sắp đến hạn
 
                                     </span>
                                 }
                                 else
                                 {
-                                    <span class="badge bg-success">
+                                    <span class="badge bg-primary">
 
-                                        Returned
+                                        🔵 Đang mượn
 
                                     </span>
                                 }
@@ -283,7 +412,9 @@
                             </td>
 
 
-                            <!-- TỔNG SỐ LƯỢNG -->
+                            <!-- =====================================
+                                 TỔNG SỐ LƯỢNG
+                            ====================================== -->
 
                             <td>
 
@@ -294,11 +425,14 @@
                             </td>
 
 
-                            <!-- IN PHIẾU -->
+                            <!-- =====================================
+                                 THAO TÁC
+                            ====================================== -->
 
                             <td>
 
-                                @if (role == "Admin" && item.Status == "Borrowed")
+                                @if (role == "Admin" &&
+                                     item.Status == "Borrowed")
                                 {
                                     <a asp-controller="LoanTickets"
                                        asp-action="Print"
@@ -321,9 +455,9 @@
                 {
                     <tr>
 
-                        <!-- 7 CỘT -->
+                        <!-- 8 CỘT -->
 
-                        <td colspan="7"
+                        <td colspan="8"
                             class="text-center py-4">
 
                             Không tìm thấy phiếu mượn.
@@ -339,6 +473,10 @@
 
     </div>
 
+
+    <!-- =========================================
+         CSS
+    ========================================== -->
 
     <style>
 
@@ -406,6 +544,49 @@
                 }
 
 
+            /* =====================================
+                       HẠN TRẢ
+                    ====================================== */
+
+            .due-date {
+                display: flex;
+                flex-direction: column;
+                gap: 3px;
+            }
+
+
+                .due-date small {
+                    font-size: 12px;
+                    color: #666;
+                }
+
+
+                .due-date.overdue {
+                    color: #dc3545;
+                }
+
+
+                    .due-date.overdue small {
+                        color: #dc3545;
+                        font-weight: 600;
+                    }
+
+
+                .due-date.due-soon {
+                    color: #d39e00;
+                }
+
+
+                    .due-date.due-soon small {
+                        color: #d39e00;
+                        font-weight: 600;
+                    }
+
+
+            /* =====================================
+                       SÁCH
+                    ====================================== */
+
             .loan-books-display {
                 display: flex;
                 align-items: center;
@@ -463,6 +644,10 @@
                 }
 
 
+            /* =====================================
+                       BADGE
+                    ====================================== */
+
             .badge {
                 padding: 5px 10px;
                 border-radius: 4px;
@@ -482,6 +667,18 @@
             }
 
 
+            .bg-danger {
+                background-color: #dc3545 !important;
+                color: white !important;
+            }
+
+
+            .bg-primary {
+                background-color: #0d6efd !important;
+                color: white !important;
+            }
+
+
             .text-center {
                 text-align: center;
             }
@@ -495,12 +692,17 @@
     </style>
 
 
+    <!-- =========================================
+         JAVASCRIPT
+    ========================================== -->
+
     <script>
 
             function toggleLoanDetails(button) {
 
                 const loanId =
                     button.getAttribute('data-loan-id');
+
 
                 const detailsDiv =
                     document.getElementById(
