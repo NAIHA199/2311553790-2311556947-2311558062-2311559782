@@ -2152,6 +2152,22 @@ a {
 }
 
 
+.back-to-landing {
+    display: inline-block;
+    margin-bottom: 20px;
+    color: #2563eb;
+    text-decoration: none;
+    font-weight: 500;
+    font-size: 14px;
+    transition: all 0.3s ease;
+}
+
+.back-to-landing:hover {
+    text-decoration: underline;
+    opacity: 0.8;
+}
+
+
 .login-card h2 {
     margin: 0 0 6px;
     font-size: 20px;
