@@ -1,0 +1,117 @@
+﻿@model IEnumerable<LibraryAdvanced.Models.User>
+@{
+    ViewData["Title"] = "Quản lý người dùng";
+    // Chỉ định sử dụng Layout Admin chung
+    Layout = "_Layout"; // Tên file Layout Admin của bạn (ví dụ: _Layout hoặc _AdminLayout)
+
+    int currentPage = ViewBag.CurrentPage ?? 1;
+    int totalPages = ViewBag.TotalPages ?? 1;
+    string search = ViewBag.Search ?? "";
+}
+
+<!-- Nội dung trang Quản lý người dùng -->
+<div class="p-3">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h3 class="fw-bold mb-0">Quản lý người dùng</h3>
+        <a asp-action="Create" class="btn btn-primary">
+            <i class="bi bi-person-plus-fill me-1"></i> Thêm Người Dùng Mới
+        </a>
+    </div>
+
+    <!-- Thông báo Alert -->
+    @if (TempData["Success"] != null)
+    {
+        <div class="alert alert-success alert-dismissible fade show mb-3" role="alert">
+            @TempData["Success"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    }
+
+    <!-- Thanh tìm kiếm -->
+    <div class="card border-0 shadow-sm mb-4">
+        <div class="card-body">
+            <form method="get" asp-action="Index" class="row g-2">
+                <div class="col-md-10">
+                    <input type="text" name="search" class="form-control" placeholder="Nhập tên đăng nhập, tên hiển thị hoặc email..." value="@search" />
+                </div>
+                <div class="col-md-2 d-grid">
+                    <button type="submit" class="btn btn-outline-primary"><i class="bi bi-search me-1"></i> Tìm kiếm</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Bảng thông tin người dùng -->
+    <div class="card border-0 shadow-sm">
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0">
+                    <thead class="bg-light">
+                        <tr>
+                            <th class="ps-3">#ID</th>
+                            <th>Tên đăng nhập</th>
+                            <th>Tên hiển thị</th>
+                            <th>Email</th>
+                            <th>Vai trò</th>
+                            <th>Trạng thái</th>
+                            <th>Ngày tạo</th>
+                            <th class="text-end pe-3">Thao tác</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @if (!Model.Any())
+                        {
+                            <tr>
+                                <td colspan="8" class="text-center py-4 text-muted">Không tìm thấy người dùng nào.</td>
+                            </tr>
+                        }
+                        else
+                        {
+                            @foreach (var u in Model)
+                            {
+                                <tr>
+                                    <td class="ps-3">@u.Id</td>
+                                    <td><strong>@u.Username</strong></td>
+                                    <td>@u.DisplayName</td>
+                                    <td>@(u.Email ?? "—")</td>
+                                    <td>
+                                        <span class="badge bg-info text-dark">@(u.Role?.Name ?? "User")</span>
+                                    </td>
+                                    <td>
+                                        @if (u.IsActive)
+                                        {
+                                            <span class="badge bg-success-subtle text-success border border-success px-2 py-1">Hoạt động</span>
+                                        }
+                                        else
+                                        {
+                                            <span class="badge bg-danger-subtle text-danger border border-danger px-2 py-1">Đã khóa</span>
+                                        }
+                                    </td>
+                                    <td>@u.CreatedAt.ToString("dd/MM/yyyy HH:mm")</td>
+                                    <td class="text-end pe-3">
+                                        <div class="btn-group btn-group-sm">
+                                            <a asp-action="Edit" asp-route-id="@u.Id" class="btn btn-outline-primary" title="Sửa">Sửa Thông Tin</a>
+                                            <a asp-action="ResetPassword" asp-route-id="@u.Id" class="btn btn-outline-warning" title="Đổi mật khẩu">Mật khẩu</a>
+                                            <form asp-action="ToggleStatus" method="post" class="d-inline">
+                                                <input type="hidden" name="id" value="@u.Id" />
+                                                <input type="hidden" name="isActive" value="@(!u.IsActive)" />
+                                                @if (u.IsActive)
+                                                {
+                                                    <button type="submit" class="btn btn-outline-danger" onclick="return confirm('Khóa tài khoản này?');">🔒Khóa</button>
+                                                }
+                                                else
+                                                {
+                                                    <button type="submit" class="btn btn-outline-success" onclick="return confirm('Mở khóa tài khoản?');">🔓Mở</button>
+                                                }
+                                            </form>
+                                        </div>
+                                    </td>
+                                </tr>
+                            }
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>

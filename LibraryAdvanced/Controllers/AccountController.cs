@@ -1,7 +1,10 @@
 ﻿using LibraryAdvanced.Models;
+using LibraryAdvanced.Services;
 using LibraryAdvanced.ViewModels;
+using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using System.Security.Claims;
 
 namespace LibraryAdvanced.Controllers
 {
@@ -31,97 +34,65 @@ namespace LibraryAdvanced.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Login(LoginViewModel model)
+        public async Task<IActionResult> Login(LoginViewModel model, string? returnUrl = null)
         {
+            ViewBag.ReturnUrl = returnUrl;
+
             if (!ModelState.IsValid)
             {
                 return View(model);
             }
 
-            // =====================================
-            // ADMIN DEMO
-            // =====================================
-
-            if (model.Username == "admin" &&
-                model.Password == "123456")
-            {
-                HttpContext.Session.SetString(
-                    "Username",
-                    "admin"
-                );
-
-                HttpContext.Session.SetString(
-                    "DisplayName",
-                    "Admin"
-                );
-
-                HttpContext.Session.SetString(
-                    "Role",
-                    "Admin"
-                );
-
-                return RedirectToAction(
-                    "Index",
-                    "Home"
-                );
-            }
-
-
-            // =====================================
-            // LOGIN USER TRONG DATABASE
-            // =====================================
-
+            // 1. Tìm user trong Database
             var user = await _context.Users
                 .Include(u => u.Role)
-                .FirstOrDefaultAsync(u =>
-                    u.Username == model.Username &&
-                    u.Password == model.Password &&
-                    u.IsActive == true
-                );
+                .FirstOrDefaultAsync(u => u.Username == model.Username.Trim());
 
-
-            if (user != null)
+            // 2. Kiểm tra sự tồn tại và xác thực mật khẩu băm
+            if (user == null || !PasswordHasher.VerifyPassword(model.Password, user.Password))
             {
-                HttpContext.Session.SetString(
-                    "Username",
-                    user.Username
-                );
-
-                HttpContext.Session.SetString(
-                    "DisplayName",
-                    user.DisplayName
-                );
-
-                // Role lấy từ DB
-                HttpContext.Session.SetString(
-                    "Role",
-                    user.Role?.Name ?? "Reader"
-                );
-
-                return RedirectToAction(
-                    "Index",
-                    "Home"
-                );
+                ModelState.AddModelError("", "Tên đăng nhập hoặc mật khẩu không chính xác.");
+                return View(model);
             }
 
+            // 3. Kiểm tra trạng thái kích hoạt tài khoản
+            if (!user.IsActive)
+            {
+                ModelState.AddModelError("", "Tài khoản của bạn đã bị khóa. Vui lòng liên hệ Admin.");
+                return View(model);
+            }
 
-            // =====================================
-            // LOGIN SAI
-            // =====================================
+            // 4. Ghi nhận Đăng nhập (Cookie Auth & Session)
+            var roleName = user.Role?.Name ?? "User";
 
-            ModelState.AddModelError(
-                "",
-                "Tên đăng nhập hoặc mật khẩu không đúng."
-            );
+            var claims = new List<Claim>
+            {
+                new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),
+                new Claim(ClaimTypes.Name, user.DisplayName),
+                new Claim(ClaimTypes.GivenName, user.Username),
+                new Claim(ClaimTypes.Role, roleName)
+            };
 
-            return View(model);
+            var claimsIdentity = new ClaimsIdentity(claims, "CookieAuth");
+            await HttpContext.SignInAsync("CookieAuth", new ClaimsPrincipal(claimsIdentity));
+
+            HttpContext.Session.SetString("Username", user.Username);
+            HttpContext.Session.SetString("DisplayName", user.DisplayName);
+            HttpContext.Session.SetString("Role", roleName);
+
+            // 5. Điều hướng sau khi đăng nhập thành công
+            if (!string.IsNullOrEmpty(returnUrl) && Url.IsLocalUrl(returnUrl))
+            {
+                return Redirect(returnUrl);
+            }
+
+            if (roleName.Equals("Admin", StringComparison.OrdinalIgnoreCase))
+            {
+                return RedirectToAction("Index", "User");
+            }
+
+            return RedirectToAction("Index", "Home");
         }
-
-
-        // =========================================
-        // REGISTER - GET
-        // =========================================
-
         [HttpGet]
         public IActionResult Register()
         {
