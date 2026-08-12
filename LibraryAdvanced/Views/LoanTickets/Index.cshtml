@@ -6,12 +6,16 @@
     ViewData["Title"] = "Danh Sách Phiếu Mượn";
 
     var role = Context.Session.GetString("Role");
+
+    var today = DateTime.Now.Date;
 }
 
 
 <div class="container-fluid">
 
-    <!-- HEADER -->
+    <!-- =========================================
+         HEADER
+    ========================================== -->
 
     <div class="d-flex justify-content-between align-items-center mb-4">
 
@@ -35,8 +39,9 @@
     </div>
 
 
-
-    <!-- FORM TÌM KIẾM + LỌC -->
+    <!-- =========================================
+         FORM TÌM KIẾM + LỌC
+    ========================================== -->
 
     <form method="get"
           asp-controller="LoanTickets"
@@ -107,8 +112,9 @@
     </form>
 
 
-
-    <!-- THÔNG BÁO -->
+    <!-- =========================================
+         THÔNG BÁO
+    ========================================== -->
     @if (TempData["Success"] != null)
     {
         <div class="alert alert-success">
@@ -129,35 +135,50 @@
     }
 
 
+    <!-- =========================================
+         TABLE
+    ========================================== -->
 
-    <!-- TABLE -->
+    <div class="loan-table-wrapper">
 
-    <div class="table-responsive">
-
-        <table class="table table-bordered table-striped">
+        <table class="loan-table">
 
             <thead>
 
                 <tr>
 
-                    <th>
+                    <th style="width: 80px;">
                         Mã Phiếu
                     </th>
 
                     <th>
-                        Tên Người Mượn
+                        Người Mượn
                     </th>
 
-                    <th>
+                    <th style="width: 120px;">
                         Ngày Mượn
                     </th>
 
-                    <th>
+                    <!-- ⭐ THÊM HẠN TRẢ -->
+
+                    <th style="width: 140px;">
+                        Hạn Trả
+                    </th>
+
+                    <th style="min-width: 250px;">
+                        Sách Mượn
+                    </th>
+
+                    <th style="width: 140px;">
                         Trạng Thái
                     </th>
 
-                    <th>
-                        Tổng Số Lượng Sách
+                    <th style="width: 70px;">
+                        Tổng
+                    </th>
+
+                    <th style="width: 130px;">
+                        Thao tác
                     </th>
 
                 </tr>
@@ -171,54 +192,261 @@
                 {
                     @foreach (var item in Model)
                     {
-                        <tr>
+                        /*
+                         * =====================================
+                         * XÁC ĐỊNH QUÁ HẠN
+                         * =====================================
+                         */
 
-                            <!-- MÃ PHIẾU -->
+                        bool isReturned =
+                            item.Status == "Returned";
+
+                        bool isOverdue =
+                            !isReturned
+                            && item.DueDate.HasValue
+                            && today > item.DueDate.Value.Date;
+
+                        int overdueDays = 0;
+
+                        if (isOverdue)
+                        {
+                            overdueDays =
+                                (today - item.DueDate!.Value.Date).Days;
+                        }
+
+
+                        /*
+                         * SẮP ĐẾN HẠN
+                         * Còn 1 ngày
+                         */
+
+                        bool isDueSoon =
+                            !isReturned
+                            && !isOverdue
+                            && item.DueDate.HasValue
+                            && (item.DueDate.Value.Date - today).Days <= 1;
+
+
+                        <tr class="loan-row"
+                            data-loan-id="@item.Id">
+
+
+                            <!-- =====================================
+                                 MÃ PHIẾU
+                            ====================================== -->
 
                             <td>
-                                @item.Id
+
+                                <strong>
+                                    @item.Id
+                                </strong>
+
                             </td>
 
 
-                            <!-- NGƯỜI MƯỢN -->
+                            <!-- =====================================
+                                 NGƯỜI MƯỢN
+                            ====================================== -->
 
                             <td>
+
                                 @item.BorrowerName
+
                             </td>
 
 
-                            <!-- NGÀY MƯỢN -->
+                            <!-- =====================================
+                                 NGÀY MƯỢN
+                            ====================================== -->
 
                             <td>
-                                @item.BorrowDate?.ToString("dd/MM/yyyy HH:mm")
+
+                                @item.BorrowDate?.ToString("dd/MM/yyyy")
+
                             </td>
 
 
-                            <!-- TRẠNG THÁI -->
+                            <!-- =====================================
+                                 HẠN TRẢ
+                            ====================================== -->
 
                             <td>
 
-                                @if (item.Status == "Borrowed")
+                                @if (item.DueDate.HasValue)
+                                {
+                                    if (isOverdue)
+                                    {
+                                        <div class="due-date overdue">
+
+                                            <strong>
+                                                @item.DueDate.Value.ToString("dd/MM/yyyy")
+                                            </strong>
+
+                                            <small>
+                                                🔴 Quá hạn @overdueDays ngày
+                                            </small>
+
+                                        </div>
+                                    }
+                                    else if (isDueSoon)
+                                    {
+                                        <div class="due-date due-soon">
+
+                                            <strong>
+                                                @item.DueDate.Value.ToString("dd/MM/yyyy")
+                                            </strong>
+
+                                            <small>
+                                                🟡 Sắp đến hạn
+                                            </small>
+
+                                        </div>
+                                    }
+                                    else
+                                    {
+                                        <div class="due-date">
+
+                                            @item.DueDate.Value.ToString("dd/MM/yyyy")
+
+                                        </div>
+                                    }
+                                }
+                                else
+                                {
+                                    <span class="text-muted">
+                                        Chưa có
+                                    </span>
+                                }
+
+                            </td>
+
+
+                            <!-- =====================================
+                                 SÁCH MƯỢN
+                            ====================================== -->
+
+                            <td>
+
+                                <div class="loan-books-display">
+
+                                    <button type="button"
+                                            class="btn-toggle-books"
+                                            data-loan-id="@item.Id"
+                                            onclick="toggleLoanDetails(this)">
+
+                                        ▼
+
+                                    </button>
+
+                                    <span class="books-count">
+
+                                        @item.LoanDetails.Count sách
+
+                                    </span>
+
+                                </div>
+
+
+                                <div class="loan-books-list hidden"
+                                     id="books-@item.Id">
+
+                                    @foreach (var detail in item.LoanDetails)
+                                    {
+                                        <div class="book-item">
+
+                                            📖 @detail.BookTitle
+
+                                            <span class="quantity">
+
+                                                × @detail.Quantity
+
+                                            </span>
+
+                                        </div>
+                                    }
+
+                                </div>
+
+                            </td>
+
+
+                            <!-- =====================================
+                                 TRẠNG THÁI
+                            ====================================== -->
+
+                            <td>
+
+                                @if (isReturned)
+                                {
+                                    <span class="badge bg-success">
+
+                                        🟢 Đã trả
+
+                                    </span>
+                                }
+                                else if (isOverdue)
+                                {
+                                    <span class="badge bg-danger">
+
+                                        🔴 Quá hạn
+
+                                    </span>
+                                }
+                                else if (isDueSoon)
                                 {
                                     <span class="badge bg-warning text-dark">
-                                        Borrowed
+
+                                        🟡 Sắp đến hạn
+
                                     </span>
                                 }
                                 else
                                 {
-                                    <span class="badge bg-success">
-                                        Returned
+                                    <span class="badge bg-primary">
+
+                                        🔵 Đang mượn
+
                                     </span>
                                 }
 
                             </td>
 
 
-                            <!-- TỔNG SỐ LƯỢNG -->
+                            <!-- =====================================
+                                 TỔNG SỐ LƯỢNG
+                            ====================================== -->
 
                             <td>
-                                @item.TotalQuantity
+
+                                <strong>
+                                    @item.TotalQuantity
+                                </strong>
+
                             </td>
+
+
+                            <!-- =====================================
+                                 THAO TÁC
+                            ====================================== -->
+
+                            <td>
+
+                                @if (role == "Admin" &&
+                                     item.Status == "Borrowed")
+                                {
+                                    <a asp-controller="LoanTickets"
+                                       asp-action="Print"
+                                       asp-route-id="@item.Id"
+                                       target="_blank"
+                                       class="btn btn-sm btn-outline-primary">
+
+                                        🖨️ In phiếu
+
+                                    </a>
+                                }
+
+                            </td>
+
 
                         </tr>
                     }
@@ -227,7 +455,9 @@
                 {
                     <tr>
 
-                        <td colspan="5"
+                        <!-- 8 CỘT -->
+
+                        <td colspan="8"
                             class="text-center py-4">
 
                             Không tìm thấy phiếu mượn.
@@ -242,5 +472,255 @@
         </table>
 
     </div>
+
+
+    <!-- =========================================
+         CSS
+    ========================================== -->
+
+    <style>
+
+            .loan-table-wrapper {
+                overflow-x: auto;
+            }
+
+
+            .loan-table {
+                background-color: #ffffff;
+                color: #333;
+                border-color: #e0e0e0;
+                width: 100%;
+                border-collapse: collapse;
+                margin: 0;
+            }
+
+
+                .loan-table thead {
+                    background-color: #0052cc;
+                    border-bottom: 2px solid #0052cc;
+                    display: table-header-group;
+                }
+
+
+                    .loan-table thead tr {
+                        display: table-row;
+                        width: 100%;
+                        background-color: #0052cc;
+                    }
+
+
+                .loan-table th {
+                    color: #ffffff;
+                    font-weight: 600;
+                    padding: 15px;
+                    text-align: left;
+                    border: 1px solid #0052cc;
+                    background-color: #0052cc;
+                }
+
+
+                .loan-table tbody {
+                    display: table-row-group;
+                }
+
+
+                .loan-table td {
+                    padding: 12px 15px;
+                    border-color: #e0e0e0;
+                    border: 1px solid #e0e0e0;
+                    vertical-align: middle;
+                    color: #333;
+                }
+
+
+            .loan-row {
+                border-bottom: 1px solid #e0e0e0;
+                display: table-row;
+            }
+
+
+                .loan-row:hover {
+                    background-color: #f5f5f5;
+                }
+
+
+            /* =====================================
+                       HẠN TRẢ
+                    ====================================== */
+
+            .due-date {
+                display: flex;
+                flex-direction: column;
+                gap: 3px;
+            }
+
+
+                .due-date small {
+                    font-size: 12px;
+                    color: #666;
+                }
+
+
+                .due-date.overdue {
+                    color: #dc3545;
+                }
+
+
+                    .due-date.overdue small {
+                        color: #dc3545;
+                        font-weight: 600;
+                    }
+
+
+                .due-date.due-soon {
+                    color: #d39e00;
+                }
+
+
+                    .due-date.due-soon small {
+                        color: #d39e00;
+                        font-weight: 600;
+                    }
+
+
+            /* =====================================
+                       SÁCH
+                    ====================================== */
+
+            .loan-books-display {
+                display: flex;
+                align-items: center;
+                gap: 8px;
+            }
+
+
+            .btn-toggle-books {
+                background: none;
+                border: none;
+                color: #0052cc;
+                cursor: pointer;
+                font-size: 16px;
+                padding: 0;
+                width: 24px;
+                transition: transform 0.3s;
+            }
+
+
+                .btn-toggle-books.expanded {
+                    transform: rotate(180deg);
+                }
+
+
+            .books-count {
+                color: #666;
+                font-size: 14px;
+            }
+
+
+            .loan-books-list {
+                margin-top: 8px;
+                padding: 8px 0;
+                display: flex;
+                flex-direction: column;
+                gap: 6px;
+            }
+
+
+                .loan-books-list.hidden {
+                    display: none;
+                }
+
+
+            .book-item {
+                color: #333;
+                font-size: 13px;
+                padding-left: 32px;
+            }
+
+
+                .book-item .quantity {
+                    color: #0052cc;
+                    font-weight: 600;
+                }
+
+
+            /* =====================================
+                       BADGE
+                    ====================================== */
+
+            .badge {
+                padding: 5px 10px;
+                border-radius: 4px;
+                font-size: 12px;
+            }
+
+
+            .bg-success {
+                background-color: #28a745 !important;
+                color: white !important;
+            }
+
+
+            .bg-warning {
+                background-color: #ffc107 !important;
+                color: #333 !important;
+            }
+
+
+            .bg-danger {
+                background-color: #dc3545 !important;
+                color: white !important;
+            }
+
+
+            .bg-primary {
+                background-color: #0d6efd !important;
+                color: white !important;
+            }
+
+
+            .text-center {
+                text-align: center;
+            }
+
+
+            .py-4 {
+                padding-top: 24px !important;
+                padding-bottom: 24px !important;
+            }
+
+    </style>
+
+
+    <!-- =========================================
+         JAVASCRIPT
+    ========================================== -->
+
+    <script>
+
+            function toggleLoanDetails(button) {
+
+                const loanId =
+                    button.getAttribute('data-loan-id');
+
+
+                const detailsDiv =
+                    document.getElementById(
+                        `books-${loanId}`
+                    );
+
+
+                button.classList.toggle(
+                    'expanded'
+                );
+
+
+                detailsDiv.classList.toggle(
+                    'hidden'
+                );
+
+            }
+
+    </script>
 
 </div>

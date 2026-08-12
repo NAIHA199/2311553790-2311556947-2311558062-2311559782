@@ -29,15 +29,12 @@
             {
                 <img src="@Model.ImagePath" 
                      alt="@Model.Title" 
-                     style="max-height: 100%; max-width: 100%; object-fit: contain; border-radius: 8px;"
-                     onerror="this.style.display='none'; this.nextElementSibling?.removeAttribute('style')" />
-                <div class="detail-book-icon" style="display: none;">📖</div>
+                     class="book-image-full" />
+                <div class="book-icon-fallback" style="display: none;">📖</div>
             }
             else
             {
-                <div class="detail-book-icon">
-                    📖
-                </div>
+                <div class="book-icon-fallback">📖</div>
             }
 
         </div>

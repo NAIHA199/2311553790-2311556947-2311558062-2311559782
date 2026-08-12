@@ -22,6 +22,37 @@
           href="~/css/site.css"
           asp-append-version="true" />
 
+
+    <style>
+            .notification-link {
+                display: flex;
+                align-items: center;
+                gap: 6px;
+                text-decoration: none;
+                color: inherit;
+                position: relative;
+            }
+
+            .notification-icon {
+                font-size: 18px;
+            }
+
+            .notification-badge {
+                display: inline-flex;
+                align-items: center;
+                justify-content: center;
+                min-width: 18px;
+                height: 18px;
+                padding: 0 4px;
+                border-radius: 999px;
+                background: #dc3545;
+                color: white;
+                font-size: 10px;
+                font-weight: 700;
+                margin-left: auto;
+            }
+    </style>
+
 </head>
 
 
@@ -65,103 +96,116 @@
     <!-- =========================================
      SIDEBAR
 ========================================= -->
-
     @if (!string.IsNullOrEmpty(role))
     {
-    <aside class="library-sidebar">
+        <aside class="library-sidebar">
 
 
-        <!-- LOGO -->
+            <!-- LOGO -->
 
-        <div class="sidebar-logo">
+            <div class="sidebar-logo">
 
-            <div class="logo-book">
-                📚
+                <div class="logo-book">
+                    📚
+                </div>
+
+                <div class="logo-text">
+
+                    <strong>
+                        LIBRARY
+                    </strong>
+
+                    <small>
+                        Library Management
+                    </small>
+
+                </div>
+
             </div>
 
-            <div class="logo-text">
-
-                <strong>
-                    LIBRARY
-                </strong>
-
-                <small>
-                    Library Management
-                </small>
-
-            </div>
-
-        </div>
 
 
-
-        <!-- =====================================
+            <!-- =====================================
          MENU
     ====================================== -->
 
-        <nav class="sidebar-menu">
+            <nav class="sidebar-menu">
 
 
-            @if (role == "Admin")
-            {
-                <!-- ================================
+                @if (role == "Admin")
+                {
+                    <!-- ================================
                  ADMIN MENU
             ================================= -->
 
-                <div class="sidebar-title">
-                    QUẢN TRỊ
-                </div>
+                    <div class="sidebar-title">
+                        QUẢN TRỊ
+                    </div>
 
 
-                <!-- DASHBOARD -->
+                    <!-- DASHBOARD -->
 
-                <a asp-controller="Home"
-                   asp-action="Index"
-                   class="sidebar-link @(currentController == "Home" ? "active" : "")">
+                    <a asp-controller="Home"
+                       asp-action="Index"
+                       class="sidebar-link @(currentController == "Home" ? "active" : "")">
 
-                    <span class="sidebar-icon">
-                        📊
-                    </span>
+                        <span class="sidebar-icon">
+                            📊
+                        </span>
 
-                    <span>
-                        Dashboard
-                    </span>
+                        <span>
+                            Dashboard
+                        </span>
 
-                </a>
-
-
-                <!-- BOOK MANAGEMENT -->
-
-                <a asp-controller="Books"
-                   asp-action="Index"
-                   class="sidebar-link @(currentController == "Books" ? "active" : "")">
-
-                    <span class="sidebar-icon">
-                        📚
-                    </span>
-
-                    <span>
-                        Quản lý sách
-                    </span>
-
-                </a>
+                    </a>
 
 
-                <!-- BORROW MANAGEMENT -->
+                    <!-- BOOK MANAGEMENT -->
 
-                <a asp-controller="LoanTickets"
-                   asp-action="Index"
-                   class="sidebar-link @(currentController == "LoanTickets" && currentAction == "Index" ? "active" : "")">
+                    <a asp-controller="Books"
+                       asp-action="Index"
+                       class="sidebar-link @(currentController == "Books" ? "active" : "")">
 
-                    <span class="sidebar-icon">
-                        📋
-                    </span>
+                        <span class="sidebar-icon">
+                            📚
+                        </span>
 
-                    <span>
-                        Quản lý mượn
-                    </span>
+                        <span>
+                            Quản lý sách
+                        </span>
 
-                </a>
+                    </a>
+                    <!--Quản lý danh mục -->
+                    <a asp-controller="Categories"
+                       asp-action="Index"
+                       class="sidebar-link">
+
+                        <span class="sidebar-icon">
+                            🗂️
+                        </span>
+
+                        <span>
+                            Quản lý danh mục
+                        </span>
+
+                    </a>
+
+
+                    <!-- BORROW MANAGEMENT -->
+
+                    <a asp-controller="LoanTickets"
+                       asp-action="Index"
+                       class="sidebar-link @(currentController == "LoanTickets" && currentAction == "Index" ? "active" : "")">
+
+                        <span class="sidebar-icon">
+                            📋
+                        </span>
+
+                        <span>
+                            Quản lý mượn
+                        </span>
+
+                    </a>
 
                 <!-- USER MANAGEMENT -->
                 <a asp-controller="User"
@@ -178,173 +222,175 @@
 
                 </a>
 
-                <!-- STATISTICS -->
+                    <!-- STATISTICS -->
 
-                <a asp-controller="Statistics"
-                   asp-action="Index"
-                   class="sidebar-link @(currentController == "Statistics" ? "active" : "")">
+                    <a asp-controller="Statistics"
+                       asp-action="Index"
+                       class="sidebar-link @(currentController == "Statistics" ? "active" : "")">
 
-                    <span class="sidebar-icon">
-                        📈
-                    </span>
+                        <span class="sidebar-icon">
+                            📈
+                        </span>
 
-                    <span>
-                        Thống kê
-                    </span>
+                        <span>
+                            Thống kê
+                        </span>
 
-                </a>
-            }
+                    </a>
+                }
 
 
-            else if (role == "Reader")
-            {
-                <!-- ================================
+                else if (role == "Reader")
+                {
+                    <!-- ================================
                  READER MENU
             ================================= -->
 
-                <div class="sidebar-title">
-                    MENU
+                    <div class="sidebar-title">
+                        MENU
+                    </div>
+
+
+                    <!-- HOME -->
+
+                    <a asp-controller="Home"
+                       asp-action="Index"
+                       class="sidebar-link @(currentController == "Home" && currentAction == "Index" ? "active" : "")">
+
+                        <span class="sidebar-icon">
+                            🏠
+                        </span>
+
+                        <span>
+                            Trang chủ
+                        </span>
+
+                    </a>
+
+
+                    <!-- BOOKS -->
+
+                    <a asp-controller="Books"
+                       asp-action="Index"
+                       class="sidebar-link @(currentController == "Books" && currentAction == "Index" ? "active" : "")">
+
+                        <span class="sidebar-icon">
+                            📚
+                        </span>
+
+                        <span>
+                            Xem sách
+                        </span>
+
+                    </a>
+
+
+                    <!-- SEARCH -->
+
+                    <a asp-controller="Books"
+                       asp-action="Index"
+                       class="sidebar-link">
+
+                        <span class="sidebar-icon">
+                            🔍
+                        </span>
+
+                        <span>
+                            Tìm kiếm
+                        </span>
+
+                    </a>
+
+
+                    <!-- LIBRARY -->
+
+                    <div class="sidebar-title sidebar-section">
+
+                        THƯ VIỆN CỦA TÔI
+
+                    </div>
+
+
+                    <!-- CURRENT BORROW -->
+
+                    <a asp-controller="LoanTickets"
+                       asp-action="Borrowed"
+                       class="sidebar-link @(currentController == "LoanTickets" && currentAction == "Borrowed" ? "active" : "")">
+
+                        <span class="sidebar-icon">
+                            📖
+                        </span>
+
+                        <span>
+                            Sách đang mượn
+                        </span>
+
+                    </a>
+
+
+                    <!-- HISTORY -->
+
+                    <a asp-controller="LoanTickets"
+                       asp-action="History"
+                       class="sidebar-link @(currentController == "LoanTickets" && currentAction == "History" ? "active" : "")">
+
+                        <span class="sidebar-icon">
+                            📋
+                        </span>
+
+                        <span>
+                            Lịch sử mượn
+                        </span>
+
+                    </a>
+                    <!-- THÔNG BÁO -->
+                    @await Component.InvokeAsync("Notification")
+
+                }
+
+
+            </nav>
+
+            <!-- USER INFO / PROFILE -->
+            <!-- USER INFO / PROFILE -->
+
+            <a asp-controller="Account"
+               asp-action="Profile"
+               class="sidebar-user profile-link">
+
+                <div class="user-avatar">
+
+                    @avatar
+
                 </div>
 
+                <div class="user-info">
 
-                <!-- HOME -->
+                    <strong>
+                        @displayName
+                    </strong>
 
-                <a asp-controller="Home"
-                   asp-action="Index"
-                   class="sidebar-link @(currentController == "Home" && currentAction == "Index" ? "active" : "")">
-
-                    <span class="sidebar-icon">
-                        🏠
-                    </span>
-
-                    <span>
-                        Trang chủ
-                    </span>
-
-                </a>
-
-
-                <!-- BOOKS -->
-
-                <a asp-controller="Books"
-                   asp-action="Index"
-                   class="sidebar-link @(currentController == "Books" && currentAction == "Index" ? "active" : "")">
-
-                    <span class="sidebar-icon">
-                        📚
-                    </span>
-
-                    <span>
-                        Xem sách
-                    </span>
-
-                </a>
-
-
-                <!-- SEARCH -->
-
-                <a asp-controller="Books"
-                   asp-action="Index"
-                   class="sidebar-link">
-
-                    <span class="sidebar-icon">
-                        🔍
-                    </span>
-
-                    <span>
-                        Tìm kiếm
-                    </span>
-
-                </a>
-
-
-                <!-- LIBRARY -->
-
-                <div class="sidebar-title sidebar-section">
-
-                    THƯ VIỆN CỦA TÔI
+                    <small>
+                        @(role == "Admin"
+                            ? "Quản trị viên"
+                            : "Độc giả")
+                    </small>
 
                 </div>
 
+            </a>
+            <!-- LOGOUT -->
 
-                <!-- CURRENT BORROW -->
+            <a asp-controller="Account"
+               asp-action="Logout"
+               class="logout-link">
 
-                <a asp-controller="LoanTickets"
-                   asp-action="Borrowed"
-                   class="sidebar-link @(currentController == "LoanTickets" && currentAction == "Borrowed" ? "active" : "")">
+                🚪 Đăng xuất
 
-                    <span class="sidebar-icon">
-                        📖
-                    </span>
-
-                    <span>
-                        Sách đang mượn
-                    </span>
-
-                </a>
+            </a>
 
 
-                <!-- HISTORY -->
-
-                <a asp-controller="LoanTickets"
-                   asp-action="History"
-                   class="sidebar-link @(currentController == "LoanTickets" && currentAction == "History" ? "active" : "")">
-
-                    <span class="sidebar-icon">
-                        📋
-                    </span>
-
-                    <span>
-                        Lịch sử mượn
-                    </span>
-
-                </a>
-            }
-
-
-        </nav>
-
-
-
-        <!-- USER INFO / PROFILE -->
-
-        <a asp-controller="Account"
-           asp-action="Profile"
-           class="sidebar-user profile-link">
-
-            <div class="user-avatar">
-
-                @avatar
-
-            </div>
-
-            <div class="user-info">
-
-                <strong>
-                    @displayName
-                </strong>
-
-                <small>
-                    @(role == "Admin"
-                        ? "Quản trị viên"
-                        : "Độc giả")
-                </small>
-
-            </div>
-
-        </a>
-        <!-- LOGOUT -->
-
-        <a asp-controller="Account"
-           asp-action="Logout"
-           class="logout-link">
-
-            🚪 Đăng xuất
-
-        </a>
-
-
-    </aside>
+        </aside>
     }
 
 

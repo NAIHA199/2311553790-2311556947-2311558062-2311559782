@@ -36,7 +36,6 @@ namespace LibraryAdvanced.Controllers
                 }
             }
 
-
             // =====================================
             // 1. TỔNG SỐ SÁCH (TẤT CẢ)
             // =====================================
@@ -132,5 +131,15 @@ namespace LibraryAdvanced.Controllers
         {
             return View(new ErrorViewModel { RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier });
         }
+        // =========================================
+        // LANDING PAGE - TRANG TRƯỚC KHI ĐĂNG NHẬP
+        // =========================================
+
+        [HttpGet]
+        public IActionResult Landing()
+        {
+            return View();
+        }
     }
 }
+    

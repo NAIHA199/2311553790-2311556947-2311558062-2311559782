@@ -28,7 +28,8 @@ namespace LibraryAdvanced.Controllers
 
         public async Task<IActionResult> Index(
             string searchString,
-            int? categoryId)
+            int? categoryId,
+            string status)
         {
             var query = _context.Books
                 .Include(b => b.Category)
@@ -39,6 +40,19 @@ namespace LibraryAdvanced.Controllers
             {
                 query = query.Where(
                     b => b.CategoryId == categoryId.Value);
+            }
+
+            // Lọc theo tình trạng (Còn sách / Hết sách)
+            if (!string.IsNullOrEmpty(status))
+            {
+                if (status == "available")
+                {
+                    query = query.Where(b => b.AvailableQuantity > 0);
+                }
+                else if (status == "unavailable")
+                {
+                    query = query.Where(b => b.AvailableQuantity == 0);
+                }
             }
 
             // Chuyển sang client để tìm kiếm
@@ -62,6 +76,7 @@ namespace LibraryAdvanced.Controllers
                 );
 
             ViewBag.SearchString = searchString;
+            ViewBag.Status = status;
 
             books = books
                 .OrderBy(b => b.Title)

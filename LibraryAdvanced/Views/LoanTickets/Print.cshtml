@@ -1,0 +1,338 @@
+﻿@model LibraryAdvanced.Models.LoanTicket
+
+@{
+    Layout = null;
+    ViewData["Title"] = "Phiếu mượn";
+}
+
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="utf-8" />
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>Phiếu mượn #@Model.Id</title>
+
+    <style>
+            * {
+                box-sizing: border-box;
+            }
+
+            html, body {
+                margin: 0;
+                padding: 0;
+                font-family: "Times New Roman", "Segoe UI", Arial, sans-serif;
+                font-size: 14px;
+                color: #111;
+                background: #fff;
+            }
+
+            .print-container {
+                width: 100%;
+                max-width: 760px;
+                margin: 0 auto;
+                padding: 30px 40px;
+                background: #fff;
+            }
+
+            .header {
+                text-align: center;
+                margin-bottom: 25px;
+            }
+
+                .header h1 {
+                    margin: 0;
+                    font-size: 28px;
+                    font-weight: bold;
+                }
+
+                .header p {
+                    margin: 5px 0 0;
+                    font-size: 14px;
+                }
+
+            .title {
+                text-align: center;
+                margin: 20px 0 25px;
+            }
+
+                .title h2 {
+                    margin: 0;
+                    font-size: 22px;
+                    font-weight: bold;
+                    text-transform: uppercase;
+                }
+
+            .info {
+                width: 100%;
+                margin-bottom: 20px;
+            }
+
+            .info-row {
+                display: flex;
+                width: 100%;
+                padding: 9px 0;
+                border-bottom: 1px solid #ddd;
+            }
+
+            .info-label {
+                width: 150px;
+                flex-shrink: 0;
+                font-weight: bold;
+            }
+
+            .info-value {
+                flex: 1;
+            }
+
+            .book-table {
+                width: 100%;
+                border-collapse: collapse;
+                margin-top: 15px;
+            }
+
+                .book-table th,
+                .book-table td {
+                    border: 1px solid #333;
+                    padding: 10px;
+                }
+
+                .book-table th {
+                    background: #f1f1f1;
+                    text-align: left;
+                    font-weight: bold;
+                }
+
+            .book-number {
+                width: 50px;
+                text-align: center;
+            }
+
+            .book-quantity {
+                width: 100px;
+                text-align: center;
+            }
+
+            .total {
+                text-align: right;
+                margin-top: 15px;
+                font-size: 17px;
+                font-weight: bold;
+            }
+
+            .signatures {
+                display: flex;
+                justify-content: space-between;
+                width: 100%;
+                margin-top: 70px;
+                page-break-inside: avoid;
+            }
+
+            .signature {
+                width: 42%;
+                text-align: center;
+            }
+
+                .signature strong {
+                    display: block;
+                    margin-bottom: 70px;
+                }
+
+                .signature p {
+                    margin: 0;
+                }
+
+            .print-button,
+            .back-button {
+                position: fixed;
+                padding: 10px 16px;
+                border-radius: 6px;
+                text-decoration: none;
+                cursor: pointer;
+                font-family: Arial, sans-serif;
+            }
+
+            .print-button {
+                top: 20px;
+                right: 20px;
+                border: none;
+                background: #2563eb;
+                color: white;
+            }
+
+            .back-button {
+                top: 20px;
+                left: 20px;
+                background: white;
+                color: #111;
+                border: 1px solid #ccc;
+            }
+
+            @@media print {
+                @@page {
+                    size: A4;
+                    margin: 15mm;
+                }
+
+                html, body {
+                    width: 100%;
+                    background: #fff;
+                }
+
+                .print-container {
+                    width: 100%;
+                    max-width: none;
+                    margin: 0;
+                    padding: 0;
+                }
+
+                .print-button,
+                .back-button {
+                    display: none !important;
+                }
+
+                .info,
+                .book-table,
+                .signatures {
+                    page-break-inside: avoid;
+                }
+
+                    .book-table tr {
+                        page-break-inside: avoid;
+                    }
+            }
+    </style>
+</head>
+
+<body>
+
+    <a href="@Url.Action("Index", "LoanTickets")"
+       class="back-button">
+        ← Quay lại
+    </a>
+
+    <button onclick="window.print()"
+            class="print-button">
+        🖨️ In phiếu
+    </button>
+
+    <div class="print-container">
+
+        <div class="header">
+            <h1>LIBRARY</h1>
+            <p>Library Management</p>
+        </div>
+
+        <div class="title">
+            <h2>Phi&#7871;u m&#432;&#7907;n s&#225;ch</h2>
+        </div>
+
+        <div class="info">
+
+            <div class="info-row">
+                <div class="info-label">
+                    M&#227; phi&#7871;u:
+                </div>
+                <div class="info-value">
+                    #@Model.Id
+                </div>
+            </div>
+
+            <div class="info-row">
+                <div class="info-label">
+                    Ng&#432;&#7901;i m&#432;&#7907;n:
+                </div>
+                <div class="info-value">
+                    @Model.BorrowerName
+                </div>
+            </div>
+
+            <div class="info-row">
+                <div class="info-label">
+                    Ng&#224;y m&#432;&#7907;n:
+                </div>
+                <div class="info-value">
+                    @(Model.BorrowDate?.ToString("dd/MM/yyyy HH:mm")
+                        ?? "Kh&#244;ng x&#225;c &#273;&#7883;nh")
+                </div>
+            </div>
+
+            <div class="info-row">
+                <div class="info-label">
+                    Tr&#7841;ng th&#225;i:
+                </div>
+                <div class="info-value">
+                    @Model.Status
+                </div>
+            </div>
+
+        </div>
+
+        @{
+            int index = 1;
+            int totalQuantity = 0;
+        }
+
+        <table class="book-table">
+            <thead>
+                <tr>
+                    <th class="book-number">#</th>
+                    <th>T&#234;n s&#225;ch</th>
+                    <th class="book-quantity">S&#7889; l&#432;&#7907;ng</th>
+                </tr>
+            </thead>
+
+            <tbody>
+                @foreach (var detail in Model.LoanDetails)
+                {
+                    totalQuantity += detail.Quantity;
+
+                    <tr>
+                        <td class="book-number">
+                            @(index++)
+                        </td>
+
+                        <td>
+                            @detail.Book.Title
+                        </td>
+
+                        <td class="book-quantity">
+                            @detail.Quantity
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+
+        <div class="total">
+            T&#7893;ng s&#7889; l&#432;&#7907;ng:
+            @totalQuantity cu&#7889;n
+        </div>
+
+        <div class="signatures">
+
+            <div class="signature">
+                <strong>
+                    Ng&#432;&#7901;i m&#432;&#7907;n
+                </strong>
+
+                <p>
+                    (K&#253; v&#224; ghi r&#245; h&#7885; t&#234;n)
+                </p>
+            </div>
+
+            <div class="signature">
+                <strong>
+                    Nh&#226;n vi&#234;n th&#432; vi&#7879;n
+                </strong>
+
+                <p>
+                    (K&#253; v&#224; ghi r&#245; h&#7885; t&#234;n)
+                </p>
+            </div>
+
+        </div>
+
+    </div>
+
+</body>
+</html>

@@ -1,0 +1,100 @@
+﻿@model LibraryAdvanced.Models.Category
+
+@{
+    ViewData["Title"] = "Xóa danh mục";
+}
+
+<div class="admin-book-header">
+
+    <span class="page-label">
+        QUẢN TRỊ
+    </span>
+
+    <h1>
+        Xóa danh mục
+    </h1>
+
+    <p>
+        Xác nhận xóa danh mục khỏi thư viện.
+    </p>
+
+</div>
+
+
+<div class="admin-book-card">
+
+    <div class="alert alert-warning">
+
+        <strong>
+            ⚠️ Bạn có chắc muốn xóa danh mục này?
+        </strong>
+
+    </div>
+
+
+    <div class="mb-4">
+
+        <strong>
+            Tên danh mục:
+        </strong>
+
+        @Model.Name
+
+    </div>
+
+
+    @if (Model.Books.Any())
+    {
+        <div class="alert alert-danger">
+
+            ❌ Không thể xóa danh mục này vì đang có
+
+            <strong>
+                @Model.Books.Count
+            </strong>
+
+            cuốn sách thuộc danh mục.
+
+            <br />
+
+            Vui lòng chuyển sách sang danh mục khác
+            trước khi xóa.
+
+        </div>
+    }
+
+
+    <div class="admin-form-actions">
+
+        <a asp-action="Index"
+           class="btn btn-secondary">
+
+            Hủy
+
+        </a>
+
+
+        @if (!Model.Books.Any())
+        {
+            <form asp-action="DeleteConfirmed"
+                  method="post">
+
+                @Html.AntiForgeryToken()
+
+                <input type="hidden"
+                       name="id"
+                       value="@Model.Id" />
+
+                <button type="submit"
+                        class="btn btn-danger">
+
+                    🗑️ Xác nhận xóa
+
+                </button>
+
+            </form>
+        }
+
+    </div>
+
+</div>
