@@ -2,19 +2,23 @@
 using LibraryAdvanced.Services;
 using LibraryAdvanced.ViewModels;
 using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using System.Security.Claims;
+using System.Security.Cryptography;
 
 namespace LibraryAdvanced.Controllers
 {
     public class AccountController : Controller
     {
         private readonly LibraryAdvancedDbContext _context;
+        private readonly InterfaceEmailService _emailService;
 
-        public AccountController(LibraryAdvancedDbContext context)
+        public AccountController(LibraryAdvancedDbContext context, InterfaceEmailService emailService)
         {
             _context = context;
+            _emailService = emailService;
         }
 
         // =========================================
@@ -49,10 +53,10 @@ namespace LibraryAdvanced.Controllers
                 .FirstOrDefaultAsync(u => u.Username == model.Username.Trim());
 
             // 2. Kiểm tra sự tồn tại và xác thực mật khẩu băm
-            if (user == null || !PasswordHasher.VerifyPassword(model.Password, user.Password))
+            if (user == null || !Services.PasswordHasher.VerifyPassword(model.Password, user.Password))
             {
                 ModelState.AddModelError("", "Tên đăng nhập hoặc mật khẩu không chính xác.");
-                return View(model);
+                return base.View(model);
             }
 
             // 3. Kiểm tra trạng thái kích hoạt tài khoản
@@ -88,7 +92,7 @@ namespace LibraryAdvanced.Controllers
 
             if (roleName.Equals("Admin", StringComparison.OrdinalIgnoreCase))
             {
-                return RedirectToAction("Index", "User");
+                return RedirectToAction("Index", "Home");
             }
 
             return RedirectToAction("Index", "Home");
@@ -201,8 +205,9 @@ namespace LibraryAdvanced.Controllers
             };
 
 
+            user.Password = PasswordHasher.HashPassword(user.Password);
+            
             _context.Users.Add(user);
-
             await _context.SaveChangesAsync();
 
 
@@ -267,6 +272,118 @@ namespace LibraryAdvanced.Controllers
 
 
             return View();
+        }
+
+        // ==========================================
+        // QUÊN MẬT KHẨU (GỬI EMAIL)
+        // ==========================================
+
+        [HttpGet]
+        public IActionResult ForgotPassword()
+        {
+            return View();
+        }
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> ForgotPassword(string email)
+        {
+            if (string.IsNullOrEmpty(email))
+            {
+                ModelState.AddModelError("", "Email không hợp lệ.");
+                return View();
+            }
+            var user = await _context.Users.FirstOrDefaultAsync(u => u.Email == email && u.IsActive);
+
+
+            if (user == null)
+            {
+                ModelState.AddModelError("", "Không tìm thấy tài khoản với email này.");
+                return View();
+            }
+
+
+
+            // Tạo token và lưu vào cơ sở dữ liệu
+            string token = Convert.ToHexString(RandomNumberGenerator.GetBytes(32));
+            user.PasswordResetToken = token;
+            user.ResetTokenExpires = DateTime.Now.AddMinutes(30); // Token có hiệu lực trong 30 phút
+
+            await _context.SaveChangesAsync();
+
+            // Gửi email với liên kết đặt lại mật khẩu
+            var resetLink = Url.Action("ResetPassword", "Account",
+                new { token = token, email = email }, Request.Scheme);
+
+            string emailBody = $@"
+            <h3>Yêu cầu đặt lại mật khẩu</h3>
+            <p>Bạn đã yêu cầu đặt lại mật khẩu cho tài khoản hệ thống.</p>
+            <p>Vui lòng bấm vào liên kết bên dưới để hoàn tất (Liên kết có hiệu lực trong 30 phút):</p>
+            <p><a href='{resetLink}' style='padding: 10px 15px; background-color: #0d6efd; color: white; text-decoration: none; border-radius: 5px;'>Đặt lại mật khẩu</a></p>
+            <p>Nếu bạn không gửi yêu cầu này, vui lòng bỏ qua email.</p>";
+
+            await _emailService.SendEmailAsync(user.Email, "Đặt lại mật khẩu", emailBody);
+            ViewBag.Message = "Một email đặt lại mật khẩu đã được gửi đến email của bạn. Vui lòng kiểm tra hộp thư đến.";
+            return View();
+        }
+
+        // ==========================================
+        // TRANG ĐẶT LẠI MẬT KHẨU MỚI
+        // ==========================================
+        [HttpGet]
+        public async Task<IActionResult> ResetPassword(string token, string email)
+        {
+            if (string.IsNullOrEmpty(token) || string.IsNullOrEmpty(email))
+            {
+                return RedirectToAction("Login");
+            }
+            var user = await _context.Users.FirstOrDefaultAsync(u =>
+                u.Email == email &&
+                u.PasswordResetToken == token &&
+                u.ResetTokenExpires > DateTime.Now);
+
+            if (user == null)
+            {
+                ViewBag.Message = "Liên kết đặt lại mật khẩu không hợp lệ hoặc đã hết hạn.";
+                return View("Error");
+
+            }
+            var model = new ResetPasswordViewModel
+            {
+                Token = token,
+                Email = email
+            };
+            return View(model);
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> ResetPassword(ResetPasswordViewModel model)
+        {
+            if (!ModelState.IsValid) return View(model);
+
+            var user = await _context.Users.FirstOrDefaultAsync(u =>
+                u.Email == model.Email &&
+                u.PasswordResetToken == model.Token &&
+                u.ResetTokenExpires > DateTime.Now);
+
+            if (user == null)
+            {
+                ModelState.AddModelError("", "Yêu cầu không hợp lệ hoặc đã hết hạn.");
+                return View(model);
+            }
+
+            // Mã hóa mật khẩu mới bằng PasswordHasher hiện có
+            user.Password = PasswordHasher.HashPassword(model.NewPassword);
+
+            // Xóa token sau khi dùng thành công
+            user.PasswordResetToken = null;
+            user.ResetTokenExpires = null;
+
+            _context.Users.Update(user);
+            await _context.SaveChangesAsync();
+
+            TempData["SuccessMessage"] = "Đổi mật khẩu thành công! Vui lòng đăng nhập lại.";
+            return RedirectToAction("Login");
         }
     }
 }

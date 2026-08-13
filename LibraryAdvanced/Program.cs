@@ -1,5 +1,6 @@
 using LibraryAdvanced.Models;
 using LibraryAdvanced.Services;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -15,7 +16,8 @@ builder.Services.AddDbContext<LibraryAdvancedDbContext>(options =>
     ));
 
 builder.Services.AddScoped<UserService>();
-
+builder.Services.AddScoped<InterfaceEmailService, EmailService>();
+builder.Services.AddScoped<IPasswordHasher<User>, PasswordHasher<User>>();
 builder.Services.AddAuthentication("CookieAuth") // Đặt Scheme mặc định là "CookieAuth"
     .AddCookie("CookieAuth", options =>
     {

@@ -23,4 +23,7 @@ public partial class User
     public DateTime? UpdatedAt { get; set; }
 
     public virtual Role Role { get; set; } = null!;
+
+    public string? PasswordResetToken { get; set; }
+    public DateTime? ResetTokenExpires { get; set; }
 }
