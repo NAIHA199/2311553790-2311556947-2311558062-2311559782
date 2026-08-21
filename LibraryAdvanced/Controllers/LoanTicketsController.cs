@@ -2,6 +2,7 @@
 using LibraryAdvanced.Models;
 using LibraryAdvanced.ViewModels;
 using LibraryManagement.ViewModels;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
@@ -581,7 +582,7 @@ namespace LibraryAdvanced.Controllers
         // ADMIN - DANH SÁCH SÁCH ĐANG MƯỢN
         // =====================================
 
-        [RoleAuthorize("Admin")]
+        [Authorize(Roles = "Admin")]
         [HttpGet]
         public async Task<IActionResult> Return()
         {
@@ -608,7 +609,7 @@ namespace LibraryAdvanced.Controllers
         // ADMIN - XÁC NHẬN TRẢ 1 CUỐN
         // =====================================
 
-        [RoleAuthorize("Admin")]
+        [Authorize(Roles = "Admin")]
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> ConfirmReturn(
@@ -767,7 +768,7 @@ namespace LibraryAdvanced.Controllers
         // ADMIN
         // =====================================
 
-        [RoleAuthorize("Admin")]
+        [Authorize(Roles = "Admin")]
         [HttpGet]
         public async Task<IActionResult> Print(
             int id)

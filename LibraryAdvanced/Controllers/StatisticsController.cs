@@ -1,11 +1,13 @@
 ﻿using ClosedXML.Excel;
 using LibraryAdvanced.Models;
 using LibraryAdvanced.ViewModel;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
 namespace LibraryAdvanced.Controllers
 {
+    [Authorize(Roles = "Admin")]
     public class StatisticsController : Controller
     {
         private readonly LibraryAdvancedDbContext _context;

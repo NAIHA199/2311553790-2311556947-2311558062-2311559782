@@ -1,11 +1,12 @@
 ﻿using LibraryAdvanced.Authorization;
 using LibraryAdvanced.Models;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
 namespace LibraryAdvanced.Controllers
 {
-    [RoleAuthorize("Admin")]
+    [Authorize(Roles = "Admin")]
     public class CategoriesController : Controller
     {
         private readonly LibraryAdvancedDbContext _context;

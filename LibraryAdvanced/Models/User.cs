@@ -1,17 +1,20 @@
 using System;
+using System.ComponentModel.DataAnnotations;
 
 namespace LibraryAdvanced.Models;
 
 public partial class User
 {
+    [Key]
     public int Id { get; set; }
-
+    [Required]
     public string Username { get; set; } = null!;
-
+    [Required]
     public string Password { get; set; } = null!;
-
+    
+    [Required]
     public string DisplayName { get; set; } = null!;
-
+    [EmailAddress]
     public string? Email { get; set; }
 
     public int RoleId { get; set; }

@@ -3,9 +3,11 @@ using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using LibraryAdvanced.Models;
 using LibraryAdvanced.Services;
+using Microsoft.AspNetCore.Authorization;
 
 namespace LibraryAdvanced.Controllers
 {
+    [Authorize(Roles = "Admin")] 
     public class UserController : Controller
     {
         private readonly UserService _userService;
